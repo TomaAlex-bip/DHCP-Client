@@ -2,6 +2,7 @@
 
 import tkinter as tk
 import Interface
+import NetworkInterface
 
 
 
@@ -12,6 +13,7 @@ if __name__ == '__main__':
 
     gui.run_interface()
 
+    # udp = NetworkInterface.NetworkInterface(nu stiu :) )
 
 
 
