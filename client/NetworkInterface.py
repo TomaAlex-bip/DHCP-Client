@@ -65,11 +65,10 @@ class NetworkInterface:
                 # print(contor)
             else:
                 data, address = self.__socket.recvfrom(1024)
+                self.__receive_package(data)
 
+                # print("contor = ", contor, "\nTrimite mesaj catre server: ")
 
-
-                print("\nS-a receptionat ", str(data), " de la serverul ", address)
-                print("contor = ", contor, "\nTrimite mesaj catre server: ")
 
 
     def __send_function(self):
@@ -87,6 +86,32 @@ class NetworkInterface:
 
     def send_package(self, package):
         self.__socket.sendto(package, (localIP, serverPort))
+
+
+    def __receive_package(self, package):
+
+        size = sys.getsizeof(package)  # 81 pana la magic inclusiv
+        # print("\nSize: ", size)
+
+        options_length = size - 81
+
+        try:
+            message = struct.unpack(f'!bbbblh2s4s4s4s4s16s4s{options_length}s', package)
+        except:
+            return
+
+        options = message[len(message) - 1]
+
+        option_code = options[0]
+        option_length = options[1]
+        option_value = []
+        index = 0
+        while index < option_length:
+            option_value.append(options[index + 2])
+            index = index + 1
+
+        print("\nS-a receptionat ", message, " de la server")
+        print("\n cu optiunea: ", option_code, " ", option_length, " ", option_value)
 
 
 
