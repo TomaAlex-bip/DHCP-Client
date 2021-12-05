@@ -22,11 +22,11 @@ class Message:
                         0x00, 0x00, 0x00, 0x00,
                         0x00, 0x00, 0x00, 0x00])
         magic_cookie = bytes([0x63, 0x82, 0x53, 0x63])
-        option1 = ([53, 1, 1])
-        package = struct.pack(f'!bbbblh2s4s4s4s4s16s4sbbb',
+        option1 = bytes([53, 1, 1])
+        package = struct.pack(f'!bbbblh2s4s4s4s4s16s4s3s',
                               op, htype, hlen, hops, xid, secs, flags,
                               ciaddr, yiaddr, siaddr, giaddr, chaddr, magic_cookie,
-                              option1[0], option1[1], option1[2])
+                              option1)
 
         return package
 

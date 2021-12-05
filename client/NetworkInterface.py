@@ -48,8 +48,8 @@ class NetworkInterface:
 
         request_message = Message.request(old_addr, mac_addr)
 
-        # test_message = Message.test_message()
 
+        # self.send_package(test_message)
         self.send_package(discover_message)
         self.send_package(request_message)
 
