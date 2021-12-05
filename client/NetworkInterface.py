@@ -3,10 +3,12 @@ import sys
 import select
 import threading
 
+from Message import *
 
-serverPort = 20001
-clientPort = 8888
-serverAddress = "127.0.0.1"
+
+serverPort = 67
+clientPort = 68
+localIP = "127.0.0.1"
 
 running = False
 
@@ -33,8 +35,23 @@ class NetworkInterface:
             self.__receive_thread.start()
             self.__send_thread.start()
         except:
+            print()
             print("Eroare la pornirea threadului")
             sys.exit()
+
+        # trimitere mesaj de discover
+
+        mac_addr = bytes([0x69, 0x69, 0x69, 0x69, 0x69, 0x69])
+        old_addr = bytes([192, 168, 45, 6])
+
+        discover_message = Message.discover(mac_addr)
+
+        request_message = Message.request(old_addr, mac_addr)
+
+        # test_message = Message.test_message()
+
+        self.send_package(discover_message)
+        self.send_package(request_message)
 
 
     def __receive_function(self):
@@ -48,6 +65,9 @@ class NetworkInterface:
                 # print(contor)
             else:
                 data, address = self.__socket.recvfrom(1024)
+
+
+
                 print("\nS-a receptionat ", str(data), " de la serverul ", address)
                 print("contor = ", contor, "\nTrimite mesaj catre server: ")
 
@@ -57,10 +77,16 @@ class NetworkInterface:
         while True:
             try:
                 data = input("Trimite mesaj catre server: ")
-                self.__socket.sendto(str.encode(data), (serverAddress, serverPort))
+                self.__socket.sendto(str.encode(data), (localIP, serverPort))
             except KeyboardInterrupt:
                 running = False
                 self.__receive_thread.join()
                 print("Closing thread...")
                 break
+
+
+    def send_package(self, package):
+        self.__socket.sendto(package, (localIP, serverPort))
+
+
 
