@@ -62,11 +62,9 @@ class NetworkInterface:
             r, _, _ = select.select([self.__socket], [], [], 1)
             if not r:
                 contor = contor + 1
-                # print(contor)
             else:
                 data, address = self.__socket.recvfrom(1024)
                 self.__receive_package(data)
-
                 # print("contor = ", contor, "\nTrimite mesaj catre server: ")
 
 
@@ -92,7 +90,6 @@ class NetworkInterface:
 
         size = sys.getsizeof(package)  # 81 pana la magic inclusiv
         # print("\nSize: ", size)
-
         options_length = size - 81
 
         try:
@@ -100,18 +97,33 @@ class NetworkInterface:
         except:
             return
 
-        options = message[len(message) - 1]
+        self.__process_package(message)
 
-        option_code = options[0]
-        option_length = options[1]
-        option_value = []
-        index = 0
-        while index < option_length:
-            option_value.append(options[index + 2])
-            index = index + 1
+
+    def __process_package(self, message):
+        read_options = message[len(message) - 1]
+        processed_options = []
+
+        options_index = 0
+        while options_index < options_length:
+            opcode = read_options[options_index]
+            length = read_options[options_index + 1]
+
+            aux = 0
+            value = []
+            while aux < length:
+                value.append(read_options[options_index + 2 + aux])
+                aux = aux + 1
+
+            options_index += length + 2
+
+            tuple_temp = (opcode, length, value)
+            processed_options.append(tuple_temp)
 
         print("\nS-a receptionat ", message, " de la server")
-        print("\n cu optiunea: ", option_code, " ", option_length, " ", option_value)
-
+        i = 0
+        while i < len(processed_options):
+            print("\n cu optiunea: ", processed_options[i])
+            i = i + 1
 
 
