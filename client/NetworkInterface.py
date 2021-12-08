@@ -15,7 +15,11 @@ running = False
 
 class NetworkInterface:
 
-    def __init__(self):
+    def __init__(self, mac_addr, old_ip_addr):
+
+        self.__mac_addr = mac_addr
+        self.__old_ip_addr = old_ip_addr
+
         # Creare socket UDP
         self.__socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
 
@@ -40,18 +44,10 @@ class NetworkInterface:
             sys.exit()
 
         # trimitere mesaj de discover
-
-        mac_addr = bytes([0x69, 0x69, 0x69, 0x69, 0x69, 0x69])
-        old_addr = bytes([192, 168, 45, 6])
-
-        discover_message = Message.discover(mac_addr)
-
-        request_message = Message.request(old_addr, mac_addr)
-
+        discover_message = Message.discover(self.__mac_addr)
 
         # self.send_package(test_message)
         self.send_package(discover_message)
-        self.send_package(request_message)
 
 
     def __receive_function(self):
@@ -97,10 +93,10 @@ class NetworkInterface:
         except:
             return
 
-        self.__process_package(message)
+        self.__process_package(message, options_length)
 
 
-    def __process_package(self, message):
+    def __process_package(self, message, options_length):
         read_options = message[len(message) - 1]
         processed_options = []
 
@@ -125,5 +121,17 @@ class NetworkInterface:
         while i < len(processed_options):
             print("\n cu optiunea: ", processed_options[i])
             i = i + 1
+
+        # decide what to do based on the received package
+
+        # this verifies if the message is an OFFER MESSAGE from the server
+        if processed_options[0][0] == 53 and processed_options[0][2][0] == 2:
+            # sends an REQUEST MESSAGE to the server
+            request_message = Message.request(self.__old_ip_addr, self.__mac_addr)
+            self.send_package(request_message)
+
+            # TO DO: should unpack the message and get the configuration parameters
+
+
 
 

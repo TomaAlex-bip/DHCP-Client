@@ -13,7 +13,9 @@ if __name__ == '__main__':
 
     # gui.run_interface()
 
-    client = NetworkInterface()
+    mac_addr_client = bytes([0x69, 0x69, 0x69, 0x69, 0x69, 0x69])
+    old_ip_addr_client = bytes([192, 168, 45, 6])
+    client = NetworkInterface(mac_addr_client, old_ip_addr_client)
     client.start()
 
 
