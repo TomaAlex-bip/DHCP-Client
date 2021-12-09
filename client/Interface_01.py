@@ -1,13 +1,12 @@
-import tkinter as tk
-from tkinter import ttk
+from tkinter import *
 from tkinter import messagebox
-from tkinter.ttk import Entry
+from tkinter.ttk import Combobox
 
 
 class Interface:
 
     def __init__(self, width, height):
-        self.__window = tk.Tk()
+        self.__window = Tk()
         self.__window.title("DHCP Client")
 
         s_width = self.__window.winfo_screenwidth()
@@ -17,34 +16,55 @@ class Interface:
         self.__window.geometry(f'{width}x{height}+{x_centre}+{y_centre}')
         self.__window.resizable(False, False)
 
-        self.__connect_button = tk.Button(
+        self.__connect_button = Button(
             self.__window,
             text="Search for a server",
             command=self.on_connect_button_callback
         )
         self.__connect_button.pack(ipadx=0, ipady=0, expand=True, side='left')
 
-        self.__legend_button = tk.Button(
+
+
+        self.__legend_button = Button(
             self.__window,
             text="Option legend",
             command=self.on_legend_button_callback
         )
         self.__legend_button.pack(ipadx=0, ipady=0, expand=True, side='left')
 
-        self.__options_button = tk.Button(
+
+
+        self.__options_button = Menubutton(
             self.__window,
-            text="Insert options",
-            command=self.on_options_button_callback
+            text="Choose options",
+            relief=RAISED
         )
+
+        self.__options_button.menu = Menu(self.__options_button, tearoff=0)
+        self.__options_button["menu"] = self.__options_button.menu
         self.__options_button.pack(ipadx=0, ipady=0, expand=True, side='left')
 
-        self.__selectedServer = tk.StringVar()
-        self.__server_options_combobox = ttk.Combobox(
+        opt1 = IntVar()
+        opt2 = IntVar()
+        opt3 = IntVar()
+
+        self.__options_button.menu.add_checkbutton(label="1", variable=opt1)
+        self.__options_button.menu.add_checkbutton(label="2", variable=opt2)
+        self.__options_button.menu.add_checkbutton(label="3", variable=opt3)
+
+        self.__options_button.pack()
+
+        self.__window.mainloop()
+
+
+
+        self.__selectedServer = StringVar()
+        self.__server_options_combobox = Combobox(
             self.__window,
             textvariable=self.__selectedServer
         )
 
-        self.t = tk.StringVar(self.__window)
+        self.t = StringVar(self.__window)
         self.e = Entry(self.__window, textvariable=self.t)
         self.e.pack(ipadx=0, ipady=0, expand=True, side='left')
 
