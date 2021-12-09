@@ -11,7 +11,7 @@ if __name__ == '__main__':
 
     gui = Interface.Interface(800, 600)
 
-    # gui.run_interface()
+    gui.run_interface()
 
     mac_addr_client = bytes([0x69, 0x69, 0x69, 0x69, 0x69, 0x69])
     old_ip_addr_client = bytes([192, 168, 45, 6])
