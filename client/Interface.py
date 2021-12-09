@@ -1,6 +1,6 @@
 from tkinter import *
 from tkinter import messagebox
-from tkinter.ttk import Combobox
+from tkinter.ttk import Combobox, Treeview
 
 global opt1, opt3, opt4, opt6, opt12, opt15, opt28, opt50, opt51, opt53, opt58, opt59, opt184;
 
@@ -121,7 +121,18 @@ class Interface:
             text='Apply',
             command=Item_test)
 
-        self.__apply.place(relx=0.84, y=230)
+        self.__apply.place(relx=0.84, rely=0.6)
+
+        def showTable():
+            pass
+            #listBox.insert .... to do
+
+        Label(self.left_list, text="DHCP Client Table", font=("Arial", 15)).place(relx=0.4, y=15)
+        client_table = ['MAC Address', 'IP Address', 'Lease Time Remaining']
+        listBox = Treeview(self.left_list, columns=client_table, show='headings')
+        for i in client_table:
+            listBox.heading(i, text=i)
+        listBox.place(relx=0.5, rely=0.5, anchor="center")
 
     def on_connect_button_callback(self):
         print("inca nu se poate gigele")
