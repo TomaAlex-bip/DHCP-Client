@@ -1,4 +1,10 @@
 import struct
+from random import randint
+
+
+def generatexid():
+    xid = randint(0, 0xFFFFFFF)
+    return hex(xid)
 
 
 class Message:
@@ -9,7 +15,7 @@ class Message:
         htype = 1
         hlen = 6
         hops = 0
-        xid = 0  # ??? Transaction ID for this message exchange.
+        xid = generatexid()  # Transaction ID for this message exchange.
         # A DHCP client generates a random number, which the client and server use to identify their message exchange.
         secs = 0
         flags = bytes([0x00, 0x00])
@@ -30,14 +36,13 @@ class Message:
 
         return package
 
-
     @staticmethod
     def request(old_ipaddr, client_mac):
         op = 1
         htype = 1
         hlen = 6
         hops = 0
-        xid = 0  # ??? Transaction ID for this message exchange.
+        xid = generatexid()  # Transaction ID for this message exchange.
         # A DHCP client generates a random number, which the client and server use to identify their message exchange.
         secs = 0
         flags = bytes([0x00, 0x00])
@@ -62,14 +67,13 @@ class Message:
 
         return package
 
-
     @staticmethod
     def decline(client_mac):
         op = 1
         htype = 1
         hlen = 6
         hops = 0
-        xid = 0  # ??? Transaction ID for this message exchange.
+        xid = generatexid()  # Transaction ID for this message exchange.
         # A DHCP client generates a random number, which the client and server use to identify their message exchange.
         secs = 0
         flags = bytes([0x00, 0x00])
@@ -90,14 +94,13 @@ class Message:
 
         return package
 
-
     @staticmethod
     def release(client_mac):
         op = 1
         htype = 1
         hlen = 6
         hops = 0
-        xid = 0  # ??? Transaction ID for this message exchange.
+        xid = generatexid() # Transaction ID for this message exchange.
         # A DHCP client generates a random number, which the client and server use to identify their message exchange.
         secs = 0
         flags = bytes([0x00, 0x00])
@@ -118,14 +121,13 @@ class Message:
 
         return package
 
-
     @staticmethod
     def inform(client_mac):
         op = 1
         htype = 1
         hlen = 6
         hops = 0
-        xid = 0  # ??? Transaction ID for this message exchange.
+        xid = generatexid()  # Transaction ID for this message exchange.
         # A DHCP client generates a random number, which the client and server use to identify their message exchange.
         secs = 0
         flags = bytes([0x00, 0x00])
