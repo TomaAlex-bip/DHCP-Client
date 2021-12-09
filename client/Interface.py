@@ -2,6 +2,13 @@ from tkinter import *
 from tkinter import messagebox
 from tkinter.ttk import Combobox
 
+global opt1, opt3, opt4, opt6, opt12, opt15, opt28, opt50, opt51, opt53, opt58, opt59, opt184;
+
+
+def Item_test():
+    if opt1.get() == 1:
+        print("1")
+
 
 class Interface:
 
@@ -23,16 +30,12 @@ class Interface:
         )
         self.__connect_button.pack(ipadx=0, ipady=0, expand=True, side='left')
 
-
-
         self.__legend_button = Button(
             self.__window,
             text="Option legend",
             command=self.on_legend_button_callback
         )
         self.__legend_button.pack(ipadx=0, ipady=0, expand=True, side='left')
-
-
 
         self.__options_button = Menubutton(
             self.__window,
@@ -45,36 +48,33 @@ class Interface:
         self.__options_button.pack(ipadx=0, ipady=0, expand=True, side='left')
 
         opt1 = IntVar()
-        opt2 = IntVar()
         opt3 = IntVar()
+        opt4 = IntVar()
+        opt6 = IntVar()
+        opt12 = IntVar()
+        opt15 = IntVar()
+        opt28 = IntVar()
+        opt50 = IntVar()
+        opt51 = IntVar()
+        opt53 = IntVar()
+        opt58 = IntVar()
+        opt59 = IntVar()
+        opt184 = IntVar()
+        opt_list = [opt1, opt3, opt4, opt6, opt12, opt15, opt28, opt50, opt51, opt53, opt58, opt59, opt184]
 
-        self.__options_button.menu.add_checkbutton(label="1", variable=opt1)
-        self.__options_button.menu.add_checkbutton(label="2", variable=opt2)
+        self.__options_button.menu.add_checkbutton(label="1", variable=opt1, onvalue=1, offvalue=0)
+        #  self.__options_button.menu.add_checkbutton(label="2", variable=opt2)
         self.__options_button.menu.add_checkbutton(label="3", variable=opt3)
 
         self.__options_button.pack()
 
-        self.__window.mainloop()
-
-
-
-        self.__selectedServer = StringVar()
-        self.__server_options_combobox = Combobox(
+        self.__apply = Button(
             self.__window,
-            textvariable=self.__selectedServer
-        )
+            text='Apply',
+            command=Item_test)
 
-        self.t = StringVar(self.__window)
-        self.e = Entry(self.__window, textvariable=self.t)
-        self.e.pack(ipadx=0, ipady=0, expand=True, side='left')
+        self.__apply.place(relx=0.84, y=320)
 
-        self.__server_options_combobox.pack(ipadx=0, ipady=0, expand=True, side='right')
-        self.__server_options_combobox.bind('<<ComboboxSelected>>', self.on_connect_server_chosen)
-        self.__server_options_combobox['values'] = ('Test server 1',
-                                                    'Test server 2',
-                                                    'Test server 3',
-                                                    'Test server 4',
-                                                    'Test server 5')
 
     def on_connect_button_callback(self):
         print("inca nu se poate gigele")
@@ -99,7 +99,6 @@ class Interface:
         op = self.t.get()
         op_list = op.split(',')
         print(op_list)
-
 
     def on_connect_server_chosen(self, ceva):
         print("o alegere minunata")
