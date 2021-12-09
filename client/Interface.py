@@ -5,11 +5,6 @@ from tkinter.ttk import Combobox
 global opt1, opt3, opt4, opt6, opt12, opt15, opt28, opt50, opt51, opt53, opt58, opt59, opt184;
 
 
-def Item_test():
-    if opt1.get() == 1:
-        print("1")
-
-
 class Interface:
 
     def __init__(self, width, height):
@@ -63,10 +58,48 @@ class Interface:
         opt_list = [opt1, opt3, opt4, opt6, opt12, opt15, opt28, opt50, opt51, opt53, opt58, opt59, opt184]
 
         self.__options_button.menu.add_checkbutton(label="1", variable=opt1, onvalue=1, offvalue=0)
-        #  self.__options_button.menu.add_checkbutton(label="2", variable=opt2)
-        self.__options_button.menu.add_checkbutton(label="3", variable=opt3)
+        self.__options_button.menu.add_checkbutton(label="3", variable=opt3, onvalue=1, offvalue=0)
+        self.__options_button.menu.add_checkbutton(label="4", variable=opt4, onvalue=1, offvalue=0)
+        self.__options_button.menu.add_checkbutton(label="6", variable=opt6, onvalue=1, offvalue=0)
+        self.__options_button.menu.add_checkbutton(label="12", variable=opt12, onvalue=1, offvalue=0)
+        self.__options_button.menu.add_checkbutton(label="15", variable=opt15, onvalue=1, offvalue=0)
+        self.__options_button.menu.add_checkbutton(label="28", variable=opt28, onvalue=1, offvalue=0)
+        self.__options_button.menu.add_checkbutton(label="50", variable=opt50, onvalue=1, offvalue=0)
+        self.__options_button.menu.add_checkbutton(label="51", variable=opt51, onvalue=1, offvalue=0)
+        self.__options_button.menu.add_checkbutton(label="53", variable=opt53, onvalue=1, offvalue=0)
+        self.__options_button.menu.add_checkbutton(label="58", variable=opt58, onvalue=1, offvalue=0)
+        self.__options_button.menu.add_checkbutton(label="59", variable=opt59, onvalue=1, offvalue=0)
+        self.__options_button.menu.add_checkbutton(label="184", variable=opt184, onvalue=1, offvalue=0)
 
         self.__options_button.pack()
+
+        def Item_test():
+            if opt1.get() == 1:
+                print("1")
+            if opt3.get() == 1:
+                print("3")
+            if opt4.get() == 1:
+                print("4")
+            if opt6.get() == 1:
+                print("6")
+            if opt12.get() == 1:
+                print("12")
+            if opt15.get() == 1:
+                print("15")
+            if opt28.get() == 1:
+                print("28")
+            if opt50.get() == 1:
+                print("50")
+            if opt51.get() == 1:
+                print("51")
+            if opt53.get() == 1:
+                print("53")
+            if opt58.get() == 1:
+                print("58")
+            if opt59.get() == 1:
+                print("59")
+            if opt184.get() == 1:
+                print("184")
 
         self.__apply = Button(
             self.__window,
@@ -74,7 +107,6 @@ class Interface:
             command=Item_test)
 
         self.__apply.place(relx=0.84, y=320)
-
 
     def on_connect_button_callback(self):
         print("inca nu se poate gigele")
