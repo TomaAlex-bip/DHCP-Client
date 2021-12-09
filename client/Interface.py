@@ -18,22 +18,37 @@ class Interface:
         self.__window.geometry(f'{width}x{height}+{x_centre}+{y_centre}')
         self.__window.resizable(False, False)
 
+        self.pw = PanedWindow(orient=VERTICAL, bg="black")
+
+        # Left listbox
+        self.left_list = Listbox(self.__window)
+        self.left_list.pack(side=LEFT)
+        self.pw.add(self.left_list)
+
+        # Right listbox
+        self.right_list = Listbox(self.__window)
+        self.right_list.pack(side=LEFT)
+        self.pw.add(self.right_list)
+
+        # place the panedwindow on the root window
+        self.pw.pack(fill=BOTH, expand=True)
+
         self.__connect_button = Button(
-            self.__window,
+            self.right_list,
             text="Search for a server",
             command=self.on_connect_button_callback
         )
         self.__connect_button.pack(ipadx=0, ipady=0, expand=True, side='left')
 
         self.__legend_button = Button(
-            self.__window,
+            self.right_list,
             text="Option legend",
             command=self.on_legend_button_callback
         )
         self.__legend_button.pack(ipadx=0, ipady=0, expand=True, side='left')
 
         self.__options_button = Menubutton(
-            self.__window,
+            self.right_list,
             text="Choose options",
             relief=RAISED
         )
@@ -102,11 +117,11 @@ class Interface:
                 print("184")
 
         self.__apply = Button(
-            self.__window,
+            self.right_list,
             text='Apply',
             command=Item_test)
 
-        self.__apply.place(relx=0.84, y=320)
+        self.__apply.place(relx=0.84, y=230)
 
     def on_connect_button_callback(self):
         print("inca nu se poate gigele")
