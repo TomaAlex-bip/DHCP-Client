@@ -1,105 +1,167 @@
-import tkinter as tk
-import tkinter.font as font
-from tkinter import ttk
+from tkinter import *
+from tkinter import messagebox
+from tkinter.ttk import Treeview, Style
+
+global opt1, opt3, opt4, opt6, opt12, opt15, opt28, opt50, opt51, opt53, opt58, opt59, opt184, enabled
 
 
 class Interface:
 
     def __init__(self, width, height):
-        self.__window = tk.Tk()
+        self.__window = Tk()
         self.__window.title("DHCP Client")
 
         s_width = self.__window.winfo_screenwidth()
         s_height = self.__window.winfo_screenheight()
-        x_centre = int(s_width/2 - width/2)
-        y_centre = int(s_height/2 - height/2)
+        x_centre = int(s_width / 2 - width / 2)
+        y_centre = int(s_height / 2 - height / 2)
         self.__window.geometry(f'{width}x{height}+{x_centre}+{y_centre}')
         self.__window.resizable(False, False)
 
+        self.pw = PanedWindow(orient=VERTICAL, bg="black")
 
+        # Left listbox
+        self.left_list = Listbox(self.__window)
+        self.left_list.pack(side=LEFT)
+        self.pw.add(self.left_list)
 
-        mac_label = tk.Label(self.__window, text='MAC address of the client\nPlease use format FF:FF:FF:FF:FF:FF')
-        mac_label.place(relx=0.15, y=20)
+        # Right listbox
+        self.right_list = Listbox(self.__window)
+        self.right_list.pack(side=LEFT)
+        self.pw.add(self.right_list)
 
-        self.__mac_addr_text = tk.Text(self.__window, height=1, width=25)
-        self.__mac_addr_text.place(relx=0.15, y=60)
-        self.__mac_addr_text.insert('1.0', '8F:45:A7:90:BA:C4')
+        # place the panedwindow on the root window
+        self.pw.pack(fill=BOTH, expand=True)
 
-        mac_label = tk.Label(self.__window, text='old IP address of the client\nPlease use format 255.255.255.255')
-        mac_label.place(relx=0.6, y=20)
+        self.enabled = IntVar()
 
-        self.__old_ip_addr_text = tk.Text(self.__window, height=1, width=25)
-        self.__old_ip_addr_text.place(relx=0.6, y=60)
-        self.__old_ip_addr_text.insert('1.0', '0.0.0.0')
-
-        start_button_font = font.Font(family='Helvetica', size=14, weight='bold')
-        self.__connect_button = tk.Button(
-            self.__window,
-            text="Start the client",
-            font=start_button_font,
-            command=self.on_connect_button_callback
+        self.__connect_button = Checkbutton(
+            self.right_list,
+            text="Enable DHCP", font=("Arial", 15),
+            command=self.on_connect_button_callback, variable=self.enabled,
+            onvalue=1,
+            offvalue=0
         )
-        self.__connect_button.place(x=320, y=120)
+        self.__connect_button.pack(ipadx=0, ipady=0, expand=True, side='left')
 
-        current_ip_addr_label = tk.Label(self.__window, text='Your IP address:')
-        current_ip_addr_label.place(x=50, y=250)
-        self.__current_ip_addr_text = tk.Text(self.__window, height=1, width=20)
-        self.__current_ip_addr_text.place(x=145, y=250)
-        self.__current_ip_addr_text['state'] = 'disabled'
-        self.__current_ip_addr_text.insert('1.0', '0.0.0.0')
-
-        lease_time_label = tk.Label(self.__window, text='Lease time:')
-        lease_time_label.place(x=75, y=300)
-        self.__lease_time_text = tk.Text(self.__window, height=1, width=10)
-        self.__lease_time_text.place(x=145, y=300)
-        self.__lease_time_text['state'] = 'disabled'
-        self.__lease_time_text.insert('1.0', '99')
-
-        options_label = tk.Label(self.__window, text='Available options:')
-        options_label.place(x=40, y=350)
-        self.__selected_option = tk.StringVar()
-        self.__options_combobox = ttk.Combobox(
-            self.__window,
-            textvariable=self.__selected_option
+        self.__legend_button = Button(
+            self.right_list,
+            text="Option legend",
+            command=self.on_legend_button_callback
         )
-        self.__options_combobox.place(x=145, y=350)
-        self.__options_combobox.bind('<<ComboboxSelected>>', self.on_connect_server_chosen)
-        self.__options_combobox['values'] = ('option 1',
-                                             'option 2',
-                                             'option 3',
-                                             'option 4',
-                                             'option 5')
+        self.__legend_button.pack(ipadx=0, ipady=0, expand=True, side='left')
 
-        self.__send_option_button = tk.Button(
-            self.__window,
-            text="Send the option to the server",
-            command=self.on_send_option_button_callback
+        self.__options_button = Menubutton(
+            self.right_list,
+            text="Choose options",
+            relief=RAISED
         )
-        self.__send_option_button.place(x=100, y=380)
 
+        self.__options_button.menu = Menu(self.__options_button, tearoff=0)
+        self.__options_button["menu"] = self.__options_button.menu
+        self.__options_button.pack(ipadx=0, ipady=0, expand=True, side='left')
 
+        opt1 = IntVar()
+        opt3 = IntVar()
+        opt4 = IntVar()
+        opt6 = IntVar()
+        opt12 = IntVar()
+        opt15 = IntVar()
+        opt28 = IntVar()
+        opt50 = IntVar()
+        opt51 = IntVar()
+        opt53 = IntVar()
+        opt58 = IntVar()
+        opt59 = IntVar()
+        opt184 = IntVar()
 
-        client_console_label = tk.Label(self.__window, text="Console:")
-        client_console_label.place(x=500, y=215)
+        self.__options_button.menu.add_checkbutton(label="1", variable=opt1, onvalue=1, offvalue=0)
+        self.__options_button.menu.add_checkbutton(label="3", variable=opt3, onvalue=1, offvalue=0)
+        self.__options_button.menu.add_checkbutton(label="4", variable=opt4, onvalue=1, offvalue=0)
+        self.__options_button.menu.add_checkbutton(label="6", variable=opt6, onvalue=1, offvalue=0)
+        self.__options_button.menu.add_checkbutton(label="12", variable=opt12, onvalue=1, offvalue=0)
+        self.__options_button.menu.add_checkbutton(label="15", variable=opt15, onvalue=1, offvalue=0)
+        self.__options_button.menu.add_checkbutton(label="28", variable=opt28, onvalue=1, offvalue=0)
+        self.__options_button.menu.add_checkbutton(label="50", variable=opt50, onvalue=1, offvalue=0)
+        self.__options_button.menu.add_checkbutton(label="51", variable=opt51, onvalue=1, offvalue=0)
+        self.__options_button.menu.add_checkbutton(label="53", variable=opt53, onvalue=1, offvalue=0)
+        self.__options_button.menu.add_checkbutton(label="58", variable=opt58, onvalue=1, offvalue=0)
+        self.__options_button.menu.add_checkbutton(label="59", variable=opt59, onvalue=1, offvalue=0)
+        self.__options_button.menu.add_checkbutton(label="184", variable=opt184, onvalue=1, offvalue=0)
 
-        self.__client_console_text = tk.Text(self.__window, height=20, width=45)
-        self.__client_console_text.place(x=400, y=250)
-        self.__client_console_text['state'] = 'disabled'
-        self.__client_console_text.insert('1.0', '99')
+        self.__options_button.pack()
 
+        def Item_test():
+            if opt1.get() == 1:
+                print("1")
+            if opt3.get() == 1:
+                print("3")
+            if opt4.get() == 1:
+                print("4")
+            if opt6.get() == 1:
+                print("6")
+            if opt12.get() == 1:
+                print("12")
+            if opt15.get() == 1:
+                print("15")
+            if opt28.get() == 1:
+                print("28")
+            if opt50.get() == 1:
+                print("50")
+            if opt51.get() == 1:
+                print("51")
+            if opt53.get() == 1:
+                print("53")
+            if opt58.get() == 1:
+                print("58")
+            if opt59.get() == 1:
+                print("59")
+            if opt184.get() == 1:
+                print("184")
 
+        self.__apply = Button(
+            self.right_list,
+            text='Apply',
+            command=Item_test)
 
-    def on_send_option_button_callback(self):
-        print("incercam dar nu putem")
+        self.__apply.place(relx=0.84, rely=0.6)
 
+        def showTable():
+            pass
+            # listBox.insert .... to do
+
+        s = Style()
+        s.configure('Treeview', rowheight=8)
+        Label(self.left_list, text="DHCP Client Table", font=("Arial", 15)).place(relx=0.4, y=15)
+        client_table = ['MAC Address', 'IP Address', 'Lease Time Remaining']
+        listBox = Treeview(self.left_list, columns=client_table, show='headings')
+        for i in client_table:
+            listBox.column(i, width=300)
+            listBox.heading(i, text=i)
+        listBox.column('Lease Time Remaining', width=150)
+        listBox.place(relx=0.5, rely=0.5, anchor="center")
 
     def on_connect_button_callback(self):
-        print("inca nu se poate gigele")
+        if self.enabled.get() == 1:
+            print("DHCP enabled")
+        elif self.enabled.get() == 0:
+            print("DHCP disabled")
 
-
-    def on_connect_server_chosen(self, ceva):
-        print("o alegere minunata")
-
+    def on_legend_button_callback(self):
+        messagebox.showinfo('Options Legend', 'Cele mai folosite optiuni sunt: \n'
+                                              '1  - specifică masca subrețelei\n'
+                                              '3  - specifică adresa gateway\n'
+                                              '4  - specifică timpul serverului\n'
+                                              '6  - specifică adresa IP a serverului DNS\n'
+                                              '12 - specifică numele dispozitivului a unui client DHCP\n'
+                                              '15 - specifică numele domeniului\n'
+                                              '28 - specifică o adresă de difuzie\n'
+                                              '50 - specifică adresa IP cerută\n'
+                                              '51 - specifică timpul de împrumut a unei adrese\n'
+                                              '53 - specifică un tip de mesaj DHCP\n'
+                                              '58 - specifică timpul de reînnoire (T1)\n'
+                                              '59 - specifică timpul de reînnoire (T2)\n'
+                                              '184 - opțiune rezervată, se poate configura informația care să fie transmisă în această opțiune\n')
 
     def run_interface(self):
         self.__window.mainloop()
