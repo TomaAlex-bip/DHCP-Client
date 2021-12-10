@@ -1,8 +1,8 @@
 from tkinter import *
 from tkinter import messagebox
-from tkinter.ttk import Combobox, Treeview, Style
+from tkinter.ttk import Treeview, Style
 
-global opt1, opt3, opt4, opt6, opt12, opt15, opt28, opt50, opt51, opt53, opt58, opt59, opt184;
+global opt1, opt3, opt4, opt6, opt12, opt15, opt28, opt50, opt51, opt53, opt58, opt59, opt184, enabled
 
 
 class Interface:
@@ -33,10 +33,14 @@ class Interface:
         # place the panedwindow on the root window
         self.pw.pack(fill=BOTH, expand=True)
 
-        self.__connect_button = Button(
+        self.enabled = IntVar()
+
+        self.__connect_button = Checkbutton(
             self.right_list,
-            text="Search for a server",
-            command=self.on_connect_button_callback
+            text="Enable DHCP", font=("Arial", 15),
+            command=self.on_connect_button_callback, variable=self.enabled,
+            onvalue=1,
+            offvalue=0
         )
         self.__connect_button.pack(ipadx=0, ipady=0, expand=True, side='left')
 
@@ -70,7 +74,6 @@ class Interface:
         opt58 = IntVar()
         opt59 = IntVar()
         opt184 = IntVar()
-        opt_list = [opt1, opt3, opt4, opt6, opt12, opt15, opt28, opt50, opt51, opt53, opt58, opt59, opt184]
 
         self.__options_button.menu.add_checkbutton(label="1", variable=opt1, onvalue=1, offvalue=0)
         self.__options_button.menu.add_checkbutton(label="3", variable=opt3, onvalue=1, offvalue=0)
@@ -125,7 +128,7 @@ class Interface:
 
         def showTable():
             pass
-            #listBox.insert .... to do
+            # listBox.insert .... to do
 
         s = Style()
         s.configure('Treeview', rowheight=8)
@@ -139,7 +142,10 @@ class Interface:
         listBox.place(relx=0.5, rely=0.5, anchor="center")
 
     def on_connect_button_callback(self):
-        print("inca nu se poate gigele")
+        if self.enabled.get() == 1:
+            print("DHCP enabled")
+        elif self.enabled.get() == 0:
+            print("DHCP disabled")
 
     def on_legend_button_callback(self):
         messagebox.showinfo('Options Legend', 'Cele mai folosite optiuni sunt: \n'
@@ -156,14 +162,6 @@ class Interface:
                                               '58 - specifică timpul de reînnoire (T1)\n'
                                               '59 - specifică timpul de reînnoire (T2)\n'
                                               '184 - opțiune rezervată, se poate configura informația care să fie transmisă în această opțiune\n')
-
-    def on_options_button_callback(self):
-        op = self.t.get()
-        op_list = op.split(',')
-        print(op_list)
-
-    def on_connect_server_chosen(self, ceva):
-        print("o alegere minunata")
 
     def run_interface(self):
         self.__window.mainloop()
