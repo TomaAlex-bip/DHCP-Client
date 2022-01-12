@@ -11,9 +11,9 @@ if __name__ == '__main__':
 
     gui = Interface.Interface(800, 600)
 
-    gui.run_interface()
+    # gui.run_interface()  # thread separat
 
-    mac_addr_client = bytes([0x69, 0x69, 0x69, 0x69, 0x69, 0x69])
+    mac_addr_client = bytes([0x00, 0x0b, 0x82, 0x01, 0xfc, 0x42])
     old_ip_addr_client = bytes([192, 168, 45, 6])
     client = NetworkInterface(mac_addr_client, old_ip_addr_client)
     client.start()

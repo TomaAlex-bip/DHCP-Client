@@ -5,10 +5,10 @@ import threading
 
 from Message import *
 
-
 serverPort = 67
 clientPort = 68
-localIP = "127.0.0.1"
+clientAddress = '192.168.0.107'
+broadcastAddress = '255.255.255.255'
 
 running = False
 
@@ -22,14 +22,17 @@ class NetworkInterface:
 
         # Creare socket UDP
         self.__socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+        self.__socket.bind((clientAddress, clientPort))
+        self.__socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        self.__socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-        self.__socket.bind(('0.0.0.0', clientPort))
 
         # creare de threaduri separate pentru trimitere si pentru primire de date
         self.__receive_thread = threading.Thread(target=self.__receive_function)
         self.__send_thread = threading.Thread(target=self.__send_function)
 
         print('UDP Client created')
+
 
 
     def start(self):
@@ -43,11 +46,19 @@ class NetworkInterface:
             print("Eroare la pornirea threadului")
             sys.exit()
 
-        # trimitere mesaj de discover
+        # TODO: discover la pornire
+        # intra intr-o bucla while(1) in care sa tot trimita mesaje de DISCOVER la cateva secunde
+
+        # trimitere mesaj de discover la pornire
         discover_message = Message.discover(self.__mac_addr)
 
         # self.send_package(test_message)
         self.send_package(discover_message)
+        print("S-a trimis mesajul DISCOVER:")
+        # print(discover_message)
+
+
+
 
 
     def __receive_function(self):
@@ -61,16 +72,22 @@ class NetworkInterface:
             else:
                 data, address = self.__socket.recvfrom(1024)
                 self.__receive_package(data)
-                # print("contor = ", contor, "\nTrimite mesaj catre server: ")
 
 
 
+
+    # TODO: contor lease time
+    # contorizeaza fiecare secunda
+    # ca sa se poata trimite un mesaj de reinnoire a adresei la lease time T1 si T2
+    # din cate observ, se poate folosi si acel contor din functia de receive
+    # astfel, nici nu ar mai trebui functia de send
     def __send_function(self):
         global running
         while True:
             try:
-                data = input("Trimite mesaj catre server: ")
-                self.__socket.sendto(str.encode(data), (localIP, serverPort))
+                pass
+                # data = input("Trimite mesaj catre server: ")
+                # self.__socket.sendto(str.encode(data), (broadcastAddress, serverPort))
             except KeyboardInterrupt:
                 running = False
                 self.__receive_thread.join()
@@ -78,22 +95,27 @@ class NetworkInterface:
                 break
 
 
+
     def send_package(self, package):
-        self.__socket.sendto(package, (localIP, serverPort))
+        self.__socket.sendto(package, (broadcastAddress, serverPort))
+
 
 
     def __receive_package(self, package):
-
-        size = sys.getsizeof(package)  # 81 pana la magic inclusiv
-        # print("\nSize: ", size)
-        options_length = size - 81
+        size = len(package)  # 240 de octeti pana la magic cookie(inclusiv)
+        print("\nSize: ", size)
+        options_length = size - 240
 
         try:
-            message = struct.unpack(f'!bbbblh2s4s4s4s4s16s4s{options_length}s', package)
+            print(package)
+            message = struct.unpack(f'!ssss4s2s2s4s4s4s4s16s64s128s4s{options_length}s', package)
         except:
+            print("\n Mesajul nu a putut fi decodificat!!!")
             return
 
-        self.__process_package(message, options_length)
+        if len(message) > 0:
+            self.__process_package(message, options_length)
+
 
 
     def __process_package(self, message, options_length):
@@ -102,36 +124,33 @@ class NetworkInterface:
 
         options_index = 0
         while options_index < options_length:
-            opcode = read_options[options_index]
-            length = read_options[options_index + 1]
+            op_code = read_options[options_index]
+            op_length = read_options[options_index + 1]
 
-            aux = 0
-            value = []
-            while aux < length:
-                value.append(read_options[options_index + 2 + aux])
-                aux = aux + 1
+            op_value_index = 0
+            op_value = []
+            while op_value_index < op_length:
+                op_value.append(read_options[options_index + 2 + op_value_index])
+                op_value_index = op_value_index + 1
 
-            options_index += length + 2
+            options_index += op_length + 2
 
-            tuple_temp = (opcode, length, value)
-            processed_options.append(tuple_temp)
+            temp_tuple = (op_code, op_length, op_value)
+            processed_options.append(temp_tuple)
 
         print("\nS-a receptionat ", message, " de la server")
-        i = 0
-        while i < len(processed_options):
-            print("\n cu optiunea: ", processed_options[i])
-            i = i + 1
+        options_index = 0
+        while options_index < len(processed_options):
+            print("\n cu optiunea: ", processed_options[options_index])
+            options_index = options_index + 1
 
         # decide what to do based on the received package
 
         # this verifies if the message is an OFFER MESSAGE from the server
         if processed_options[0][0] == 53 and processed_options[0][2][0] == 2:
+            print("Serverul a raspuns cu un mesaj de OFFER")
             # sends an REQUEST MESSAGE to the server
             request_message = Message.request(self.__old_ip_addr, self.__mac_addr)
             self.send_package(request_message)
 
-            # TO DO: should unpack the message and get the configuration parameters
-
-
-
-
+            # TODO: should unpack the message and get the configuration parameters
