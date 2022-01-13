@@ -24,9 +24,12 @@ class NetworkInterface:
 
         self.__subnet_mask = bytes([0x00, 0x00, 0x00, 0x00])
         self.__gateway = bytes([0x00, 0x00, 0x00, 0x00])
-        self.__lease_time = bytes([0x00, 0x00, 0x00, 0x00])
+        self.__lease_time = 0
+        self.__lease_t1 = 0
+        self.__lease_t2 = 0
         self.__dns = bytes([0x00, 0x00, 0x00, 0x00])
 
+        self.__contor_lease_time = 0
 
 
         self.__server_ip_addr = bytes([0x00, 0x00, 0x00, 0x00])
@@ -72,13 +75,21 @@ class NetworkInterface:
 
 
     def __receive_function(self):
-        contor = 0
         while running:
             # Apelam la functia sistem IO -select- pentru a verifca daca socket-ul are date in bufferul de receptie
             # Stabilim un timeout de 1 secunda
             r, _, _ = select.select([self.__socket], [], [], 1)
             if not r:
-                contor = contor + 1
+                self.__contor_lease_time = self.__contor_lease_time + 1
+
+                if self.__contor_lease_time >= self.__lease_t1:
+                    pass
+                    # trimitere mesaj de request pentru reiinoire
+
+                if self.__contor_lease_time >= self.__lease_t2:
+                    pass
+                    # trimitere mesaj de request pentru reiinoire
+
             else:
                 data, address = self.__socket.recvfrom(1024)
                 self.__receive_package(data)
@@ -114,11 +125,17 @@ class NetworkInterface:
     def send_request(self):
         server_ip = str(int(self.__server_ip_addr[0])) + '.' + str(int(self.__server_ip_addr[1])) + '.' + \
                    str(int(self.__server_ip_addr[2])) + '.' + str(int(self.__server_ip_addr[3]))
-
         request_message = Message.request(self.__mac_addr, self.__server_ip_addr, self.__received_ip_addr)
-
         self.__socket.sendto(request_message, (server_ip, serverPort))
         print("\nS-a trimis un mesaj REQUEST catre " + server_ip + " cu adresa: " + self.__received_ip_addr.hex())
+
+
+    def send_decline(self):
+        server_ip = str(int(self.__server_ip_addr[0])) + '.' + str(int(self.__server_ip_addr[1])) + '.' + \
+                    str(int(self.__server_ip_addr[2])) + '.' + str(int(self.__server_ip_addr[3]))
+        decline_message = Message.decline(self.__mac_addr, self.__server_ip_addr)
+        self.__socket.sendto(decline_message, (server_ip, serverPort))
+        print("\nS-a trimis un mesaj DECLINE catre " + server_ip + " cu adresa: " + self.__received_ip_addr.hex())
 
 
 
@@ -266,6 +283,8 @@ class NetworkInterface:
             print("\n gateway address:" + self.__gateway.hex())
             print("\n dns address:" + self.__dns.hex())
             print("\n lease time:" + str(self.__lease_time))
+
+            # self.send_decline()
 
 
         # this verifies if the message is an NAK MESSAGE from the server

@@ -100,7 +100,6 @@ class Message:
                         0x00, 0x00, 0x00, 0x00])
         sname = bytes([0x00] * 64)
         file = bytes([0x00] * 128)
-
         magic_cookie = bytes([0x63, 0x82, 0x53, 0x63])
 
         message_option = bytes([53, 1, 3])
@@ -108,9 +107,7 @@ class Message:
         client_identifier_option = bytes([61, 7, 0x01, client_mac[0], client_mac[1],
                                           client_mac[2], client_mac[3], client_mac[4], client_mac[5]])
 
-
         server_identifier_option = bytes([54, 4, server_ip[0], server_ip[1], server_ip[2], server_ip[3]])
-        # TODO: aici se pune adresa ip a serverului ales
 
         # optiunea care precizeaza ce optiuni se cer de la server(addr IP, Gateway, Mask, DNS, lease time)
         # 3 -> gateway
@@ -138,15 +135,16 @@ class Message:
         return package
 
 
+
     @staticmethod
-    def decline(client_mac):
-        op = 1
-        htype = 1
-        hlen = 6
-        hops = 0
+    def decline(client_mac, server_ip):
+        op = bytes([0x01])
+        htype = bytes([0x01])
+        hlen = bytes([0x06])
+        hops = bytes([0x00])
         xid = generatexid()  # Transaction ID for this message exchange.
         # A DHCP client generates a random number, which the client and server use to identify their message exchange.
-        secs = 0
+        secs = bytes([0x00, 0x00])
         flags = bytes([0x00, 0x00])
         ciaddr = bytes([0x00, 0x00, 0x00, 0x00])
         yiaddr = bytes([0x00, 0x00, 0x00, 0x00])
@@ -156,14 +154,30 @@ class Message:
                         client_mac[4], client_mac[5], 0x00, 0x00,
                         0x00, 0x00, 0x00, 0x00,
                         0x00, 0x00, 0x00, 0x00])
+        sname = bytes([0x00] * 64)
+        file = bytes([0x00] * 128)
         magic_cookie = bytes([0x63, 0x82, 0x53, 0x63])
-        option1 = ([53, 1, 6])
-        package = struct.pack(f'!bbbblh2s4s4s4s4s16s4sbbb',
-                              op, htype, hlen, hops, xid, secs, flags,
-                              ciaddr, yiaddr, siaddr, giaddr, chaddr, magic_cookie,
-                              option1[0], option1[1], option1[2])
+        message_option = bytes([53, 1, 4])
+
+        client_identifier_option = bytes([61, 7, 0x01, client_mac[0], client_mac[1],
+                                          client_mac[2], client_mac[3], client_mac[4], client_mac[5]])
+
+        server_identifier_option = bytes([54, 4, server_ip[0], server_ip[1], server_ip[2], server_ip[3]])
+
+        end_option = bytes([0xff])
+
+        padding = bytes([0x00] * 13)  # TODO: sa fie de lungime variablia cum trebuie
+        padding_length = len(padding)
+
+        package = struct.pack(f'!ssss4s2s2s4s4s4s4s16s64s128s4s3s9s6ss{padding_length}s',
+                              op, htype, hlen, hops, xid, secs, flags, ciaddr, yiaddr, siaddr, giaddr,
+                              chaddr, sname, file, magic_cookie, message_option, client_identifier_option,
+                              server_identifier_option, end_option, padding)
+
 
         return package
+
+
 
     @staticmethod
     def release(client_mac):
