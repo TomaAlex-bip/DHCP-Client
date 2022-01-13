@@ -28,7 +28,7 @@ class Message:
 
 
     @staticmethod
-    def discover(client_mac):
+    def discover(client_mac, requested_ip):
         op = bytes([0x01])
         htype = bytes([0x01])
         hlen = bytes([0x06])
@@ -56,7 +56,7 @@ class Message:
         client_identifier_option = bytes([61, 7, 0x01, client_mac[0], client_mac[1],
                                           client_mac[2], client_mac[3], client_mac[4], client_mac[5]])
 
-        requested_ip_address_option = bytes([50, 4, 0x00, 0x00, 0x00, 0x00])  # TODO: fill with ce trebuie
+        requested_ip_address_option = bytes([50, 4, requested_ip[0], requested_ip[1], requested_ip[2], requested_ip[3]])
 
 
         # optiunea care precizeaza ce optiuni se cer de la server(addr IP, Gateway, Mask, DNS, lease time)
@@ -81,7 +81,7 @@ class Message:
 
 
     @staticmethod
-    def request(old_ipaddr, client_mac):
+    def request(client_mac, server_ip, old_ipaddr):
         op = bytes([0x01])
         htype = bytes([0x01])
         hlen = bytes([0x06])
@@ -108,9 +108,8 @@ class Message:
         client_identifier_option = bytes([61, 7, 0x01, client_mac[0], client_mac[1],
                                           client_mac[2], client_mac[3], client_mac[4], client_mac[5]])
 
-        requested_ip_address_option = bytes([50, 4, old_ipaddr[0], old_ipaddr[1], old_ipaddr[2], old_ipaddr[3]])
 
-        server_identifier_option = bytes([54, 4, 0xc0, 0xa8, 0x00, 0x01])
+        server_identifier_option = bytes([54, 4, server_ip[0], server_ip[1], server_ip[2], server_ip[3]])
         # TODO: aici se pune adresa ip a serverului ales
 
         # optiunea care precizeaza ce optiuni se cer de la server(addr IP, Gateway, Mask, DNS, lease time)
@@ -127,7 +126,7 @@ class Message:
         padding = bytes([0x00])  # TODO: sa fie de lungime variablia cum trebuie
         padding_length = len(padding)
 
-
+        requested_ip_address_option = bytes([50, 4, old_ipaddr[0], old_ipaddr[1], old_ipaddr[2], old_ipaddr[3]])
         package = struct.pack(f'!ssss4s2s2s4s4s4s4s16s64s128s4s3s9s6s6s{request_option_length}ss{padding_length}s',
                               op, htype, hlen, hops, xid, secs, flags,
                               ciaddr, yiaddr, siaddr, giaddr, chaddr, sname, file,
@@ -137,6 +136,7 @@ class Message:
                               )
 
         return package
+
 
     @staticmethod
     def decline(client_mac):

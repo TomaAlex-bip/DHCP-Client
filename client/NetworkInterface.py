@@ -19,6 +19,17 @@ class NetworkInterface:
 
         self.__mac_addr = mac_addr
         self.__old_ip_addr = old_ip_addr
+        self.__current_ip_addr = old_ip_addr
+        self.__received_ip_addr = old_ip_addr
+
+        self.__subnet_mask = bytes([0x00, 0x00, 0x00, 0x00])
+        self.__gateway = bytes([0x00, 0x00, 0x00, 0x00])
+        self.__lease_time = bytes([0x00, 0x00, 0x00, 0x00])
+        self.__dns = bytes([0x00, 0x00, 0x00, 0x00])
+
+
+
+        self.__server_ip_addr = bytes([0x00, 0x00, 0x00, 0x00])
 
         # Creare socket UDP
         self.__socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
@@ -46,17 +57,14 @@ class NetworkInterface:
             print("Eroare la pornirea threadului")
             sys.exit()
 
-        # creare mesaj DISCOVER
-        discover_message = Message.discover(self.__mac_addr)
-
         # trimitere mesaj DISCOVER la pornire
         # cat timp nu s-a primit raspuns de la server se trimit mesaje DISCOVER
         r, _, _ = select.select([self.__socket], [], [], 1)
         received_message = False
         while not r and not received_message:
             received_message = True
-            self.send_package(discover_message)
-            print("S-a trimis mesajul DISCOVER:")
+            self.send_discover()
+
 
         data, address = self.__socket.recvfrom(1024)
         self.__receive_package(data)
@@ -98,8 +106,19 @@ class NetworkInterface:
 
 
 
-    def send_package(self, package):
-        self.__socket.sendto(package, (broadcastAddress, serverPort))
+    def send_discover(self):
+        self.__socket.sendto(Message.discover(self.__mac_addr, self.__old_ip_addr), (broadcastAddress, serverPort))
+        print("\nS-a trimis un mesaj DISCOVER cu adresa: ", self.__old_ip_addr.hex())
+
+
+    def send_request(self):
+        server_ip = str(int(self.__server_ip_addr[0])) + '.' + str(int(self.__server_ip_addr[1])) + '.' + \
+                   str(int(self.__server_ip_addr[2])) + '.' + str(int(self.__server_ip_addr[3]))
+
+        request_message = Message.request(self.__mac_addr, self.__server_ip_addr, self.__received_ip_addr)
+
+        self.__socket.sendto(request_message, (server_ip, serverPort))
+        print("\nS-a trimis un mesaj REQUEST catre " + server_ip + " cu adresa: " + self.__received_ip_addr.hex())
 
 
 
@@ -119,7 +138,6 @@ class NetworkInterface:
             self.__process_package(message, options_length)
 
 
-    # TODO: vezi ca nu merge :)
     def __process_package(self, message, options_length):
 
         op = message[0].hex()
@@ -130,7 +148,7 @@ class NetworkInterface:
         secs = message[5].hex()
         flags = message[6].hex()
         ciaddr = message[7].hex()
-        yiaddr = message[8].hex()
+        yiaddr = message[8]
         siaddr = message[9].hex()
         giaddr = message[10].hex()
         chaddr = message[11].hex()
@@ -138,6 +156,7 @@ class NetworkInterface:
         file = message[13].hex()
         magic_cookie = message[14]
         read_options = message[15]
+
 
         # print("\nMessage:")
         # print("op: " + message[0].hex())
@@ -156,15 +175,6 @@ class NetworkInterface:
         # print("file: " + message[13].hex())
         # print("magic cookie: " + message[14].hex())
         # print("options: " + message[15].hex())
-
-        # option1: 35 01 02
-        # option2: 36 04 c0 a8 00 01
-        # option3: 33 04 00 00 1c 20
-        # option4: 01 04 ff ff ff 00
-        # option5: 03 04 c0 a8 00 01
-        # option6: 06 04 c0 a8 00 01
-        # end option: ff
-        # padding: 00 x multi
 
         # print("read_options = ")
         # split_strings = [read_options.hex()[index: index + 2] for index in range(0, len(read_options), 2)]
@@ -187,10 +197,15 @@ class NetworkInterface:
             temp_tuple = (op_code, op_length, op_value)
             processed_options.append(temp_tuple)
 
-        print("\nS-a receptionat ", message, " \nde la server")
+        print("\nS-a receptionat ", message, " \nde la server adresa: ", yiaddr.hex())
         options_index = 0
         while options_index < len(processed_options):
             print("   cu optiunea " + str(options_index) + ": ", processed_options[options_index])
+            if processed_options[options_index][0] == 54:
+                self.__server_ip_addr = bytes([processed_options[options_index][2][0],
+                                               processed_options[options_index][2][1],
+                                               processed_options[options_index][2][2],
+                                               processed_options[options_index][2][3]])
             options_index = options_index + 1
 
         # decide what to do based on the received package
@@ -208,20 +223,56 @@ class NetworkInterface:
         # this verifies if the message is an OFFER MESSAGE from the server
         if processed_options[0][0] == 53 and processed_options[0][2][0] == 2:
             print("Serverul a raspuns cu un mesaj de OFFER")
-
             # sends an REQUEST MESSAGE to the server
-            request_message = Message.request(self.__old_ip_addr, self.__mac_addr)
-            self.send_package(request_message)
+            self.__received_ip_addr = bytes([yiaddr[0], yiaddr[1], yiaddr[2], yiaddr[3]])
+            self.send_request()
 
-            # TODO: should unpack the message and get the configuration parameters
-
-
+        # this verifies if the message is an ACK MESSAGE from the server
         if processed_options[0][0] == 53 and processed_options[0][2][0] == 5:
             print("Serverul a raspuns cu un mesaj de ACK")
+            options_index = 0
+            while options_index < len(processed_options):
+                # print("   cu optiunea " + str(options_index) + ": ", processed_options[options_index])
+
+                if processed_options[options_index][0] == 51:
+                    self.__lease_time = int("0x"+(bytes([processed_options[options_index][2][0],
+                                                   processed_options[options_index][2][1],
+                                                   processed_options[options_index][2][2],
+                                                   processed_options[options_index][2][3]])).hex(), base=16)
+
+                if processed_options[options_index][0] == 1:
+                    self.__subnet_mask = bytes([processed_options[options_index][2][0],
+                                               processed_options[options_index][2][1],
+                                               processed_options[options_index][2][2],
+                                               processed_options[options_index][2][3]])
+
+                if processed_options[options_index][0] == 3:
+                    self.__gateway = bytes([processed_options[options_index][2][0],
+                                           processed_options[options_index][2][1],
+                                           processed_options[options_index][2][2],
+                                           processed_options[options_index][2][3]])
+
+                if processed_options[options_index][0] == 6:
+                    self.__dns = bytes([processed_options[options_index][2][0],
+                                       processed_options[options_index][2][1],
+                                       processed_options[options_index][2][2],
+                                       processed_options[options_index][2][3]])
 
 
+                options_index = options_index + 1
+
+            print("\n IP address:" + self.__current_ip_addr.hex())
+            print("\n subnet mask:" + self.__subnet_mask.hex())
+            print("\n gateway address:" + self.__gateway.hex())
+            print("\n dns address:" + self.__dns.hex())
+            print("\n lease time:" + str(self.__lease_time))
+
+
+        # this verifies if the message is an NAK MESSAGE from the server
         if processed_options[0][0] == 53 and processed_options[0][2][0] == 6:
             print("Serverul a raspuns cu un mesaj de NAK")
+
+
 
 
 
