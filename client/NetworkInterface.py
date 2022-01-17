@@ -7,7 +7,10 @@ from Message import *
 
 serverPort = 67
 clientPort = 68
-clientAddress = '192.168.0.107'
+'''In cazul in care sunt instalate masini virtuale pe statie
+trebuie dat disable la conexiuni (din Control Panel \ Network and Internet \ Network Connections)
+pentru ca functia gethostbyname sa returneze ip-ul corect'''
+clientAddress = socket.gethostbyname(socket.gethostname())
 broadcastAddress = '255.255.255.255'
 
 running = False
