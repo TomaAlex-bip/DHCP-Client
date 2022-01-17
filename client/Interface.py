@@ -1,6 +1,16 @@
+import socket
 from tkinter import *
 from tkinter import messagebox
 from tkinter.ttk import Treeview, Style
+
+from NetworkInterface import NetworkInterface
+
+mac_addr_client = bytes([0x00, 0x0b, 0x82, 0x01, 0xfc, 0x42])
+old_ip_addr_client = bytes([0xc0, 0xa8, 0x00, 0x71])
+
+ni = NetworkInterface(mac_addr_client, old_ip_addr_client )
+ni.start()
+
 
 global opt1, opt3, opt4, opt6, opt12, opt15, opt28, opt50, opt51, opt53, opt58, opt59, opt184, enabled
 
@@ -126,26 +136,44 @@ class Interface:
 
         self.__apply.place(relx=0.84, rely=0.6)
 
-        def showTable():
-            pass
-            # listBox.insert .... to do
+        def showTableini(self):
+            self.listBox.insert('', 'end', text="1",
+                                values=((mac_addr_client.hex()).upper(), socket.inet_ntoa(old_ip_addr_client)))
 
-        s = Style()
-        s.configure('Treeview', rowheight=8)
+        self.s = Style()
+        self.s.configure('Treeview', rowheight=8)
         Label(self.left_list, text="DHCP Client Table", font=("Arial", 15)).place(relx=0.4, y=15)
-        client_table = ['MAC Address', 'IP Address', 'Lease Time Remaining']
-        listBox = Treeview(self.left_list, columns=client_table, show='headings')
-        for i in client_table:
-            listBox.column(i, width=300)
-            listBox.heading(i, text=i)
-        listBox.column('Lease Time Remaining', width=150)
-        listBox.place(relx=0.5, rely=0.5, anchor="center")
+        self.client_table = ['MAC Address', 'IP Address']
+        self.listBox = Treeview(self.left_list, columns=self.client_table, show='headings')
+        for i in self.client_table:
+            self.listBox.column(i, width=200)
+            self.listBox.heading(i, text=i)
+        self.listBox.place(relx=0.5, rely=0.5, anchor="center")
+        showTableini(self)
+
+    def add_col(self):
+        self.client_table.append('Subnet Mask')
+        self.client_table.append('Gateway Address')
+        self.client_table.append('DNS Address')
+        self.client_table.append('Lease time')
+        self.listBox = Treeview(self.left_list, columns=self.client_table, show='headings')
+        for i in self.client_table:
+            self.listBox.column(i, width=100)
+            self.listBox.heading(i, text=i)
+        self.listBox.place(relx=0.5, rely=0.5, anchor="center")
+        self.listBox.insert('', 'end', text="1",
+                            values=(
+                            (mac_addr_client.hex()).upper(), socket.inet_ntoa(ni.get_ip()), socket.inet_ntoa(ni.get_sm()), socket.inet_ntoa(ni.get_gw()),
+                            socket.inet_ntoa(ni.get_dns()), str(ni.get_lease()) + 's'))
+
+
 
     def on_connect_button_callback(self):
         if self.enabled.get() == 1:
             print("DHCP enabled")
         elif self.enabled.get() == 0:
             print("DHCP disabled")
+        self.add_col()
 
     def on_legend_button_callback(self):
         messagebox.showinfo('Options Legend', 'Cele mai folosite optiuni sunt: \n'
