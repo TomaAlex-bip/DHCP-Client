@@ -4,13 +4,12 @@ from tkinter import messagebox
 from tkinter.ttk import Treeview, Style
 
 from NetworkInterface import NetworkInterface
+import op_list
 
 mac_addr_client = bytes([0x00, 0x0b, 0x82, 0x01, 0xfc, 0x42])
 old_ip_addr_client = bytes([0xc0, 0xa8, 0x00, 0x71])
 
-ni = NetworkInterface(mac_addr_client, old_ip_addr_client )
-ni.start()
-
+ni = NetworkInterface(mac_addr_client, old_ip_addr_client)
 
 global opt1, opt3, opt4, opt6, opt12, opt15, opt28, opt50, opt51, opt53, opt58, opt59, opt184, enabled
 
@@ -71,72 +70,44 @@ class Interface:
         self.__options_button["menu"] = self.__options_button.menu
         self.__options_button.pack(ipadx=0, ipady=0, expand=True, side='left')
 
-        opt1 = IntVar()
-        opt3 = IntVar()
-        opt4 = IntVar()
-        opt6 = IntVar()
-        opt12 = IntVar()
-        opt15 = IntVar()
-        opt28 = IntVar()
-        opt50 = IntVar()
-        opt51 = IntVar()
-        opt53 = IntVar()
-        opt58 = IntVar()
-        opt59 = IntVar()
-        opt184 = IntVar()
+        self.opt1 = IntVar()
+        self.opt3 = IntVar()
+        self.opt4 = IntVar()
+        self.opt6 = IntVar()
+        self.opt12 = IntVar()
+        self.opt15 = IntVar()
+        self.opt28 = IntVar()
+        self.opt50 = IntVar()
+        self.opt51 = IntVar()
+        self.opt53 = IntVar()
+        self.opt58 = IntVar()
+        self.opt59 = IntVar()
+        self.opt184 = IntVar()
 
-        self.__options_button.menu.add_checkbutton(label="1", variable=opt1, onvalue=1, offvalue=0)
-        self.__options_button.menu.add_checkbutton(label="3", variable=opt3, onvalue=1, offvalue=0)
-        self.__options_button.menu.add_checkbutton(label="4", variable=opt4, onvalue=1, offvalue=0)
-        self.__options_button.menu.add_checkbutton(label="6", variable=opt6, onvalue=1, offvalue=0)
-        self.__options_button.menu.add_checkbutton(label="12", variable=opt12, onvalue=1, offvalue=0)
-        self.__options_button.menu.add_checkbutton(label="15", variable=opt15, onvalue=1, offvalue=0)
-        self.__options_button.menu.add_checkbutton(label="28", variable=opt28, onvalue=1, offvalue=0)
-        self.__options_button.menu.add_checkbutton(label="50", variable=opt50, onvalue=1, offvalue=0)
-        self.__options_button.menu.add_checkbutton(label="51", variable=opt51, onvalue=1, offvalue=0)
-        self.__options_button.menu.add_checkbutton(label="53", variable=opt53, onvalue=1, offvalue=0)
-        self.__options_button.menu.add_checkbutton(label="58", variable=opt58, onvalue=1, offvalue=0)
-        self.__options_button.menu.add_checkbutton(label="59", variable=opt59, onvalue=1, offvalue=0)
-        self.__options_button.menu.add_checkbutton(label="184", variable=opt184, onvalue=1, offvalue=0)
+        self.__options_button.menu.add_checkbutton(label="1", variable=self.opt1, onvalue=1, offvalue=0)
+        self.__options_button.menu.add_checkbutton(label="3", variable=self.opt3, onvalue=1, offvalue=0)
+        self.__options_button.menu.add_checkbutton(label="4", variable=self.opt4, onvalue=1, offvalue=0)
+        self.__options_button.menu.add_checkbutton(label="6", variable=self.opt6, onvalue=1, offvalue=0)
+        self.__options_button.menu.add_checkbutton(label="12", variable=self.opt12, onvalue=1, offvalue=0)
+        self.__options_button.menu.add_checkbutton(label="15", variable=self.opt15, onvalue=1, offvalue=0)
+        self.__options_button.menu.add_checkbutton(label="28", variable=self.opt28, onvalue=1, offvalue=0)
+        self.__options_button.menu.add_checkbutton(label="50", variable=self.opt50, onvalue=1, offvalue=0)
+        self.__options_button.menu.add_checkbutton(label="51", variable=self.opt51, onvalue=1, offvalue=0)
+        self.__options_button.menu.add_checkbutton(label="53", variable=self.opt53, onvalue=1, offvalue=0)
+        self.__options_button.menu.add_checkbutton(label="58", variable=self.opt58, onvalue=1, offvalue=0)
+        self.__options_button.menu.add_checkbutton(label="59", variable=self.opt59, onvalue=1, offvalue=0)
+        self.__options_button.menu.add_checkbutton(label="184", variable=self.opt184, onvalue=1, offvalue=0)
 
         self.__options_button.pack()
-
-        def Item_test():
-            if opt1.get() == 1:
-                print("1")
-            if opt3.get() == 1:
-                print("3")
-            if opt4.get() == 1:
-                print("4")
-            if opt6.get() == 1:
-                print("6")
-            if opt12.get() == 1:
-                print("12")
-            if opt15.get() == 1:
-                print("15")
-            if opt28.get() == 1:
-                print("28")
-            if opt50.get() == 1:
-                print("50")
-            if opt51.get() == 1:
-                print("51")
-            if opt53.get() == 1:
-                print("53")
-            if opt58.get() == 1:
-                print("58")
-            if opt59.get() == 1:
-                print("59")
-            if opt184.get() == 1:
-                print("184")
 
         self.__apply = Button(
             self.right_list,
             text='Apply',
-            command=Item_test)
+            command=self.return_op)
 
         self.__apply.place(relx=0.84, rely=0.6)
 
-        def showTableini(self):
+        def showTableini():
             self.listBox.insert('', 'end', text="1",
                                 values=((mac_addr_client.hex()).upper(), socket.inet_ntoa(old_ip_addr_client)))
 
@@ -149,7 +120,41 @@ class Interface:
             self.listBox.column(i, width=200)
             self.listBox.heading(i, text=i)
         self.listBox.place(relx=0.5, rely=0.5, anchor="center")
-        showTableini(self)
+        showTableini()
+
+    def Item_test(self):
+        opt_list = []
+        if self.opt1.get() == 1:
+            opt_list.append(1)
+        if self.opt3.get() == 1:
+            opt_list.append(3)
+        if self.opt4.get() == 1:
+            opt_list.append(4)
+        if self.opt6.get() == 1:
+            opt_list.append(6)
+        if self.opt12.get() == 1:
+            opt_list.append(12)
+        if self.opt15.get() == 1:
+            opt_list.append(15)
+        if self.opt28.get() == 1:
+            opt_list.append(28)
+        if self.opt50.get() == 1:
+            opt_list.append(50)
+        if self.opt51.get() == 1:
+            opt_list.append(51)
+        if self.opt53.get() == 1:
+            opt_list.append(53)
+        if self.opt58.get() == 1:
+            opt_list.append(58)
+        if self.opt59.get() == 1:
+            opt_list.append(59)
+        if self.opt184.get() == 1:
+            opt_list.append(184)
+        return opt_list
+
+    def return_op(self):
+        op_list.op_list = self.Item_test()
+        print(op_list.op_list)
 
     def add_col(self):
         self.client_table.append('Subnet Mask')
@@ -163,17 +168,20 @@ class Interface:
         self.listBox.place(relx=0.5, rely=0.5, anchor="center")
         self.listBox.insert('', 'end', text="1",
                             values=(
-                            (mac_addr_client.hex()).upper(), socket.inet_ntoa(ni.get_ip()), socket.inet_ntoa(ni.get_sm()), socket.inet_ntoa(ni.get_gw()),
-                            socket.inet_ntoa(ni.get_dns()), str(ni.get_lease()) + 's'))
-
-
+                                (mac_addr_client.hex()).upper(), socket.inet_ntoa(ni.get_ip()),
+                                socket.inet_ntoa(ni.get_sm()), socket.inet_ntoa(ni.get_gw()),
+                                socket.inet_ntoa(ni.get_dns()), str(ni.get_lease()) + 's'))
 
     def on_connect_button_callback(self):
         if self.enabled.get() == 1:
+            ni.start()
             print("DHCP enabled")
+            for i in self.listBox.get_children():
+                self.listBox.delete(i)
+            self.__window.update()
+            self.add_col()
         elif self.enabled.get() == 0:
             print("DHCP disabled")
-        self.add_col()
 
     def on_legend_button_callback(self):
         messagebox.showinfo('Options Legend', 'Cele mai folosite optiuni sunt: \n'
