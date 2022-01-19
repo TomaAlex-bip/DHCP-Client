@@ -45,12 +45,15 @@ class NetworkInterface:
         self.__lease_t2 = 0
         self.__dns = bytes([0x00, 0x00, 0x00, 0x00])
 
+        self.__options_list = [1, 3, 6, 51]  # default options
+
         self.__server_ip_addr = bytes([0x00, 0x00, 0x00, 0x00])
 
         self.__contor_lease_time = 0
         self.__offer_messages_queue = queue.Queue()
 
-        self.__got_offer = False
+        self.__sent_renew_t1 = False
+        self.__sent_renew_t2 = False
 
         # Creare socket UDP
         self.__socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
@@ -102,17 +105,24 @@ class NetworkInterface:
 
     def __lease_time_renew_function(self):
         print("Lease tine renew thread started")
-        contor = 0
+        self.__contor_lease_time = 0
         while True:
-            print("time passed: ", contor)
+            print("time passed: ", self.__contor_lease_time)
             sleep(1)
-            contor = contor + 1
-            if contor >= self.__lease_time:
+            self.__contor_lease_time = self.__contor_lease_time + 1
+            if not self.__sent_renew_t1 and self.__contor_lease_time >= self.__lease_time * 50.0/100.0:  # T1
                 # trimitere mesaj de request pentru reiinoire
-                raise NotImplementedError
+                self.send_request()
+                self.__sent_renew_t1 = True
 
-            if contor >= self.__lease_time:
+            if not self.__sent_renew_t2 and self.__contor_lease_time >= self.__lease_time * 87.5/100.0:  # T2
                 # trimitere mesaj de request pentru reiinoire
+                self.send_request()
+                self.__sent_renew_t2 = True
+
+            if self.__contor_lease_time > self.__lease_time:
+                # stop using the current_p_addres
+                # TODO: fie oprim clientul, fie cumva dar complicat reincepem secventa de discover
                 raise NotImplementedError
 
 
@@ -137,6 +147,7 @@ class NetworkInterface:
                 if not self.__send_requests_thread.is_alive():
                     self.__send_requests_thread.start()
                 stop = True
+                sys.exit()
 
 
             contor = contor + 1
@@ -316,6 +327,13 @@ class NetworkInterface:
             if not self.__lease_time_renew_thread.is_alive():
                 self.__lease_time_renew_thread.start()
 
+            if self.__sent_renew_t1:
+                self.__contor_lease_time = 0
+                self.__sent_renew_t1 = False
+
+            if self.__sent_renew_t2:
+                self.__contor_lease_time = 0
+                self.__sent_renew_t2 = False
 
             options_index = 0
             while options_index < len(processed_options):
@@ -325,6 +343,7 @@ class NetworkInterface:
                                                            processed_options[options_index][2][1],
                                                            processed_options[options_index][2][2],
                                                            processed_options[options_index][2][3]])).hex(), base=16)
+                    # self.__lease_time = 30
 
                 if processed_options[options_index][0] == 1:
                     self.__subnet_mask = bytes([processed_options[options_index][2][0],
@@ -386,6 +405,8 @@ class NetworkInterface:
     def get_old_ip(self):
         return self.__old_ip_addr
 
+    def update_options_list(self, options_list):
+        self.__options_list = options_list
 
 
 

@@ -2,9 +2,8 @@ import random
 import struct
 
 
-def generatexid():
+def generate_xid():
     return random.randbytes(4)
-
 
 
 # 1     DHCPDISCOVER
@@ -27,7 +26,7 @@ class Message:
         htype = bytes([0x01])
         hlen = bytes([0x06])
         hops = bytes([0x00])
-        xid = generatexid()  # Transaction ID for this message exchange.
+        xid = generate_xid()  # Transaction ID for this message exchange.
         # A DHCP client generates a random number, which the client and server use to identify their message exchange.
         secs = bytes([0x00, 0x00])
         flags = bytes([0x80, 0x00])
@@ -70,14 +69,13 @@ class Message:
                               requested_ip_address_option, request_option, end_options, padding)
         return package
 
-
     @staticmethod
     def request(client_mac, server_ip, old_ipaddr, options_list):
         op = bytes([0x01])
         htype = bytes([0x01])
         hlen = bytes([0x06])
         hops = bytes([0x00])
-        xid = generatexid()  # Transaction ID for this message exchange.
+        xid = generate_xid()  # Transaction ID for this message exchange.
         # A DHCP client generates a random number, which the client and server use to identify their message exchange.
         secs = bytes([0x00, 0x00])
         flags = bytes([0x80, 0x00])
@@ -138,14 +136,13 @@ class Message:
 
         return package
 
-
     @staticmethod
     def decline(client_mac, server_ip):
         op = bytes([0x01])
         htype = bytes([0x01])
         hlen = bytes([0x06])
         hops = bytes([0x00])
-        xid = generatexid()  # Transaction ID for this message exchange.
+        xid = generate_xid()  # Transaction ID for this message exchange.
         # A DHCP client generates a random number, which the client and server use to identify their message exchange.
         secs = bytes([0x00, 0x00])
         flags = bytes([0x00, 0x00])
@@ -179,14 +176,13 @@ class Message:
 
         return package
 
-
     @staticmethod
     def release(client_mac, server_ip):
         op = bytes([0x01])
         htype = bytes([0x01])
         hlen = bytes([0x06])
         hops = bytes([0x00])
-        xid = generatexid()  # Transaction ID for this message exchange.
+        xid = generate_xid()  # Transaction ID for this message exchange.
         # A DHCP client generates a random number, which the client and server use to identify their message exchange.
         secs = bytes([0x00, 0x00])
         flags = bytes([0x00, 0x00])
@@ -220,14 +216,13 @@ class Message:
 
         return package
 
-
     @staticmethod
     def inform(client_mac, server_ip, options_list):
         op = bytes([0x01])
         htype = bytes([0x01])
         hlen = bytes([0x06])
         hops = bytes([0x00])
-        xid = generatexid()  # Transaction ID for this message exchange.
+        xid = generate_xid()  # Transaction ID for this message exchange.
         # A DHCP client generates a random number, which the client and server use to identify their message exchange.
         secs = bytes([0x00, 0x00])
         flags = bytes([0x80, 0x00])
@@ -274,7 +269,6 @@ class Message:
 
         padding = bytes([0x00] * padding_length)
 
-
         print("request_option: " + request_option.hex())
 
         package = struct.pack(f'!ssss4s2s2s4s4s4s4s16s64s128s4s3s9s6s{request_option_length}ss{padding_length}s',
@@ -286,14 +280,13 @@ class Message:
 
         return package
 
-
     @staticmethod
     def get_options(client_mac, server_ip, options_list):
         op = bytes([0x01])
         htype = bytes([0x01])
         hlen = bytes([0x06])
         hops = bytes([0x00])
-        xid = generatexid()  # Transaction ID for this message exchange.
+        xid = generate_xid()  # Transaction ID for this message exchange.
         # A DHCP client generates a random number, which the client and server use to identify their message exchange.
         secs = bytes([0x00, 0x00])
         flags = bytes([0x80, 0x00])
@@ -338,7 +331,6 @@ class Message:
 
         padding = bytes([0x00] * padding_length)
 
-
         print("request_option: " + request_option.hex())
 
         package = struct.pack(f'!ssss4s2s2s4s4s4s4s16s64s128s4s9s6s{request_option_length}ss{padding_length}s',
@@ -349,7 +341,6 @@ class Message:
                               )
 
         return package
-
 
     @staticmethod
     def unpack_package(package):
@@ -381,7 +372,6 @@ class Message:
         except:
             return None
 
-
     @staticmethod
     def package_type(options):
         if options[0][0] == 53 and options[0][2][0] == 2:
@@ -392,30 +382,3 @@ class Message:
             return 'NAK'
         else:
             return 'unknown'
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
