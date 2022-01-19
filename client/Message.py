@@ -386,9 +386,9 @@ class Message:
     def package_type(options):
         if options[0][0] == 53 and options[0][2][0] == 2:
             return 'OFFER'
-        elif options[0][0] == 53 and options[0][2][0] == 6:
+        elif options[0][0] == 53 and options[0][2][0] == 5:
             return 'ACK'
-        elif options[0][0] == 53 and options[0][2][0] == 7:
+        elif options[0][0] == 53 and options[0][2][0] == 6:
             return 'NAK'
         else:
             return 'unknown'

@@ -16,12 +16,13 @@ pentru ca functia gethostbyname sa returneze ip-ul corect'''
 # interfaceAddress = socket.gethostbyname(socket.gethostname())
 
 interfaceAddress = '192.168.0.107'
+# interfaceAddress = '192.168.0.126'
 
 broadcastAddress = '255.255.255.255'
 
 
-offer_wait_time = 10
-ack_wait_time = 5
+offer_wait_time = 20
+ack_wait_time = 15
 
 running = False
 
@@ -103,13 +104,14 @@ class NetworkInterface:
         print("Lease tine renew thread started")
         contor = 0
         while True:
+            print("time passed: ", contor)
             sleep(1)
             contor = contor + 1
-            if contor >= self.__lease_t1:
+            if contor >= self.__lease_time:
                 # trimitere mesaj de request pentru reiinoire
                 raise NotImplementedError
 
-            if contor >= self.__lease_t2:
+            if contor >= self.__lease_time:
                 # trimitere mesaj de request pentru reiinoire
                 raise NotImplementedError
 
@@ -253,26 +255,6 @@ class NetworkInterface:
         # print("magic cookie: " + message[14].hex())
         # print("options: " + message[15].hex())
 
-        # print("read_options = ")
-        # split_strings = [read_options.hex()[index: index + 2] for index in range(0, len(read_options), 2)]
-        # print(split_strings)
-
-        # processed_options = []
-        # options_index = 0
-        # while options_index < options_length and read_options[options_index] != 255:
-        #     op_code = read_options[options_index]
-        #     op_length = read_options[options_index + 1]
-        #
-        #     op_value_index = 0
-        #     op_value = []
-        #     while op_value_index < op_length:
-        #         op_value.append(read_options[options_index + 2 + op_value_index])
-        #         op_value_index = op_value_index + 1
-        #
-        #     options_index += op_length + 2
-        #
-        #     temp_tuple = (op_code, op_length, op_value)
-        #     processed_options.append(temp_tuple)
 
         print("\nS-a receptionat ", message, " \nde la server adresa: ", yiaddr.hex())
         options_index = 0
@@ -306,7 +288,7 @@ class NetworkInterface:
             self.send_request()
 
             # send DECLINE messages to the other servers
-            while self.__offer_messages_queue.not_empty:
+            while self.__offer_messages_queue.qsize() > 0:
                 decline_message, decline_options_length, decline_options = self.__offer_messages_queue.get()
 
                 options_index = 0
@@ -330,6 +312,10 @@ class NetworkInterface:
         # this verifies if the message is an ACK MESSAGE from the server
         if Message.package_type(processed_options) == 'ACK':
             print("Serverul a raspuns cu un mesaj de ACK")
+
+            if not self.__lease_time_renew_thread.is_alive():
+                self.__lease_time_renew_thread.start()
+
 
             options_index = 0
             while options_index < len(processed_options):
@@ -361,11 +347,11 @@ class NetworkInterface:
                 options_index = options_index + 1
 
 
-            print("\n IP address:" + self.__current_ip_addr.hex())
-            print("\n subnet mask:" + self.__subnet_mask.hex())
-            print("\n gateway address:" + self.__gateway.hex())
-            print("\n dns address:" + self.__dns.hex())
-            print("\n lease time:" + str(self.__lease_time))
+            print("\nIP address:" + self.__current_ip_addr.hex())
+            print("subnet mask:" + self.__subnet_mask.hex())
+            print("gateway address:" + self.__gateway.hex())
+            print("dns address:" + self.__dns.hex())
+            print("lease time:" + str(self.__lease_time))
 
             # self.send_decline()
             # self.send_release()
