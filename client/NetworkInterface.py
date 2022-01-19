@@ -9,7 +9,11 @@ from Message import *
 
 serverPort = 67
 clientPort = 68
-interfaceAddress = '192.168.0.107'
+
+'''In cazul in care sunt instalate masini virtuale pe statie
+trebuie dat disable la conexiuni (din Control Panel \ Network and Internet \ Network Connections)
+pentru ca functia gethostbyname sa returneze ip-ul corect'''
+clientAddress = socket.gethostbyname(socket.gethostname())
 broadcastAddress = '255.255.255.255'
 
 offer_wait_time = 10
@@ -46,7 +50,6 @@ class NetworkInterface:
         self.__socket.bind((interfaceAddress, clientPort))
         self.__socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         self.__socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-
 
         # creare de threaduri separate pentru trimitere si pentru primire de date
         self.__receive_thread = threading.Thread(target=self.__receive_function)
@@ -224,7 +227,7 @@ class NetworkInterface:
         sname = message[12].hex()
         file = message[13].hex()
         magic_cookie = message[14]
-        # read_options = message[15]
+        read_options = message[15]
 
         # print("\nMessage:")
         # print("op: " + message[0].hex())
@@ -287,7 +290,6 @@ class NetworkInterface:
         # 7     DHCPRELEASE     c
         # 8     DHCPINFORM      c
 
-
         # this verifies if the message is an OFFER MESSAGE from the server
         if Message.package_type(processed_options) == 'OFFER':
             print("Serverul a raspuns cu un mesaj de OFFER")
@@ -327,28 +329,28 @@ class NetworkInterface:
             while options_index < len(processed_options):
                 # print("   cu optiunea " + str(options_index) + ": ", processed_options[options_index])
                 if processed_options[options_index][0] == 51:
-                    self.__lease_time = int("0x"+(bytes([processed_options[options_index][2][0],
-                                                   processed_options[options_index][2][1],
-                                                   processed_options[options_index][2][2],
-                                                   processed_options[options_index][2][3]])).hex(), base=16)
+                    self.__lease_time = int("0x" + (bytes([processed_options[options_index][2][0],
+                                                           processed_options[options_index][2][1],
+                                                           processed_options[options_index][2][2],
+                                                           processed_options[options_index][2][3]])).hex(), base=16)
 
                 if processed_options[options_index][0] == 1:
                     self.__subnet_mask = bytes([processed_options[options_index][2][0],
-                                               processed_options[options_index][2][1],
-                                               processed_options[options_index][2][2],
-                                               processed_options[options_index][2][3]])
+                                                processed_options[options_index][2][1],
+                                                processed_options[options_index][2][2],
+                                                processed_options[options_index][2][3]])
 
                 if processed_options[options_index][0] == 3:
                     self.__gateway = bytes([processed_options[options_index][2][0],
-                                           processed_options[options_index][2][1],
-                                           processed_options[options_index][2][2],
-                                           processed_options[options_index][2][3]])
+                                            processed_options[options_index][2][1],
+                                            processed_options[options_index][2][2],
+                                            processed_options[options_index][2][3]])
 
                 if processed_options[options_index][0] == 6:
                     self.__dns = bytes([processed_options[options_index][2][0],
-                                       processed_options[options_index][2][1],
-                                       processed_options[options_index][2][2],
-                                       processed_options[options_index][2][3]])
+                                        processed_options[options_index][2][1],
+                                        processed_options[options_index][2][2],
+                                        processed_options[options_index][2][3]])
 
                 options_index = options_index + 1
 
@@ -364,6 +366,20 @@ class NetworkInterface:
             # self.send_inform()
             # self.send_options()
 
+    def get_ip(self):
+        return self.__current_ip_addr
+
+    def get_sm(self):
+        return self.__subnet_mask
+
+    def get_gw(self):
+        return self.__gateway
+
+    def get_dns(self):
+        return self.__dns
+
+    def get_lease(self):
+        return self.__lease_time
 
         # this verifies if the message is an NAK MESSAGE from the server
         if Message.package_type(processed_options) == 'NAK':

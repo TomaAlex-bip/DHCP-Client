@@ -17,8 +17,9 @@ def generatexid():
 # 8     DHCPINFORM
 
 
-
 class Message:
+
+    # pentru a trimite alte optiuni se face cu opt 52 si dupa in value se trec mai multe optiuni cerute
 
     @staticmethod
     def discover(client_mac, requested_ip):
@@ -38,8 +39,8 @@ class Message:
                         client_mac[4], client_mac[5], 0x00, 0x00,
                         0x00, 0x00, 0x00, 0x00,
                         0x00, 0x00, 0x00, 0x00])
-        sname = bytes([0x00]*64)
-        file = bytes([0x00]*128)
+        sname = bytes([0x00] * 64)
+        file = bytes([0x00] * 128)
 
         magic_cookie = bytes([0x63, 0x82, 0x53, 0x63])
 
@@ -50,7 +51,6 @@ class Message:
                                           client_mac[2], client_mac[3], client_mac[4], client_mac[5]])
 
         requested_ip_address_option = bytes([50, 4, requested_ip[0], requested_ip[1], requested_ip[2], requested_ip[3]])
-
 
         # optiunea care precizeaza ce optiuni se cer de la server(addr IP, Gateway, Mask, DNS, lease time)
         # 3 -> gateway
@@ -68,7 +68,6 @@ class Message:
                               ciaddr, yiaddr, siaddr, giaddr, chaddr, sname, file,
                               magic_cookie, message_option, client_identifier_option,
                               requested_ip_address_option, request_option, end_options, padding)
-
         return package
 
 
@@ -177,7 +176,6 @@ class Message:
                               op, htype, hlen, hops, xid, secs, flags, ciaddr, yiaddr, siaddr, giaddr,
                               chaddr, sname, file, magic_cookie, message_option, client_identifier_option,
                               server_identifier_option, end_option, padding)
-
 
         return package
 
