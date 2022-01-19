@@ -13,7 +13,7 @@ clientPort = 68
 '''In cazul in care sunt instalate masini virtuale pe statie
 trebuie dat disable la conexiuni (din Control Panel \ Network and Internet \ Network Connections)
 pentru ca functia gethostbyname sa returneze ip-ul corect'''
-clientAddress = socket.gethostbyname(socket.gethostname())
+interfaceAddress = socket.gethostbyname(socket.gethostname())
 broadcastAddress = '255.255.255.255'
 
 offer_wait_time = 10
@@ -366,6 +366,13 @@ class NetworkInterface:
             # self.send_inform()
             # self.send_options()
 
+
+        # this verifies if the message is an NAK MESSAGE from the server
+        if Message.package_type(processed_options) == 'NAK':
+            print("Serverul a raspuns cu un mesaj de NAK")
+
+
+
     def get_ip(self):
         return self.__current_ip_addr
 
@@ -380,13 +387,6 @@ class NetworkInterface:
 
     def get_lease(self):
         return self.__lease_time
-
-        # this verifies if the message is an NAK MESSAGE from the server
-        if Message.package_type(processed_options) == 'NAK':
-            print("Serverul a raspuns cu un mesaj de NAK")
-
-
-
 
 
 
