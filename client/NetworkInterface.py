@@ -13,8 +13,12 @@ clientPort = 68
 '''In cazul in care sunt instalate masini virtuale pe statie
 trebuie dat disable la conexiuni (din Control Panel \ Network and Internet \ Network Connections)
 pentru ca functia gethostbyname sa returneze ip-ul corect'''
-interfaceAddress = socket.gethostbyname(socket.gethostname())
+# interfaceAddress = socket.gethostbyname(socket.gethostname())
+
+interfaceAddress = '192.168.0.107'
+
 broadcastAddress = '255.255.255.255'
+
 
 offer_wait_time = 10
 ack_wait_time = 5
@@ -25,6 +29,8 @@ running = False
 class NetworkInterface:
 
     def __init__(self, mac_addr, old_ip_addr):
+
+        print(interfaceAddress)
 
         self.__mac_addr = mac_addr
         self.__old_ip_addr = old_ip_addr
@@ -388,7 +394,11 @@ class NetworkInterface:
     def get_lease(self):
         return self.__lease_time
 
+    def get_mac(self):
+        return self.__mac_addr
 
+    def get_old_ip(self):
+        return self.__old_ip_addr
 
 
 

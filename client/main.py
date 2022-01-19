@@ -9,14 +9,18 @@ from NetworkInterface import *
 if __name__ == '__main__':
     print("Gigel")
 
-    # gui = Interface.Interface(800, 600)
-
-    # gui.run_interface()  # thread separat
 
     mac_addr_client = bytes([0x00, 0x0b, 0x82, 0x01, 0xfc, 0x42])
     old_ip_addr_client = bytes([0xc0, 0xa8, 0x00, 0x71])
-    client = NetworkInterface(mac_addr_client, old_ip_addr_client)
-    client.start()
+    network_interface = NetworkInterface(mac_addr_client, old_ip_addr_client)
+    # network_interface.start()
+
+
+    gui = Interface.Interface(800, 600, network_interface)
+    # passed the networkInterface to the GUI interface constructor,
+    # after that, for getting or setting the variables use getters and setters
+
+    gui.run_interface()
 
 
 # ponturi

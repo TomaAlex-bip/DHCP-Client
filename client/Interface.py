@@ -3,22 +3,23 @@ from tkinter import *
 from tkinter import messagebox
 from tkinter.ttk import Treeview, Style
 
-from NetworkInterface import NetworkInterface
 import op_list
 
-mac_addr_client = bytes([0x00, 0x0b, 0x82, 0x01, 0xfc, 0x42])
-old_ip_addr_client = bytes([0xc0, 0xa8, 0x00, 0x71])
+# mac_addr_client = bytes([0x00, 0x0b, 0x82, 0x01, 0xfc, 0x42])
+# old_ip_addr_client = bytes([0xc0, 0xa8, 0x00, 0x71])
 
-ni = NetworkInterface(mac_addr_client, old_ip_addr_client)
+# ni = NetworkInterface(mac_addr_client, old_ip_addr_client)
 
 global opt1, opt3, opt4, opt6, opt12, opt15, opt28, opt50, opt51, opt53, opt58, opt59, opt184, enabled
 
 
 class Interface:
 
-    def __init__(self, width, height):
+    def __init__(self, width, height, ni):
         self.__window = Tk()
         self.__window.title("DHCP Client")
+
+        self.__networkInterface = ni
 
         s_width = self.__window.winfo_screenwidth()
         s_height = self.__window.winfo_screenheight()
@@ -109,7 +110,7 @@ class Interface:
 
         def showTableini():
             self.listBox.insert('', 'end', text="1",
-                                values=((mac_addr_client.hex()).upper(), socket.inet_ntoa(old_ip_addr_client)))
+                                values=((ni.get_mac().hex()).upper(), socket.inet_ntoa(ni.get_old_ip())))
 
         self.s = Style()
         self.s.configure('Treeview', rowheight=8)
@@ -168,13 +169,16 @@ class Interface:
         self.listBox.place(relx=0.5, rely=0.5, anchor="center")
         self.listBox.insert('', 'end', text="1",
                             values=(
-                                (mac_addr_client.hex()).upper(), socket.inet_ntoa(ni.get_ip()),
-                                socket.inet_ntoa(ni.get_sm()), socket.inet_ntoa(ni.get_gw()),
-                                socket.inet_ntoa(ni.get_dns()), str(ni.get_lease()) + 's'))
+                                (self.__networkInterface.get_mac().hex()).upper(),
+                                socket.inet_ntoa(self.__networkInterface.get_ip()),
+                                socket.inet_ntoa(self.__networkInterface.get_sm()),
+                                socket.inet_ntoa(self.__networkInterface.get_gw()),
+                                socket.inet_ntoa(self.__networkInterface.get_dns()),
+                                str(self.__networkInterface.get_lease()) + 's'))
 
     def on_connect_button_callback(self):
         if self.enabled.get() == 1:
-            ni.start()
+            self.__networkInterface.start()
             print("DHCP enabled")
             for i in self.listBox.get_children():
                 self.listBox.delete(i)
@@ -197,7 +201,8 @@ class Interface:
                                               '53 - specifică un tip de mesaj DHCP\n'
                                               '58 - specifică timpul de reînnoire (T1)\n'
                                               '59 - specifică timpul de reînnoire (T2)\n'
-                                              '184 - opțiune rezervată, se poate configura informația care să fie transmisă în această opțiune\n')
+                                              '184 - opțiune rezervată, se poate configura informația care să fie '
+                                              'transmisă în această opțiune\n')
 
     def run_interface(self):
         self.__window.mainloop()
