@@ -400,7 +400,7 @@ class NetworkInterface:
             print("Serverul a raspuns cu un mesaj de NAK")
 
 
-    def reset_client(self):
+    def reset_client(self, start_again=True):
         global running
         print("Performig RESET")
 
@@ -424,9 +424,12 @@ class NetworkInterface:
         if self.__receive_thread.is_alive():
             # self.__receive_thread.join()
             print("STOP receive thread (current) thread")
-            self.start()
-            print("Start the client again")
+            if start_again:
+                self.start()
+                print("Start the client again")
             sys.exit()
+
+
 
 
     def get_ip(self):
