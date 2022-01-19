@@ -55,6 +55,8 @@ class NetworkInterface:
         self.__sent_renew_t1 = False
         self.__sent_renew_t2 = False
 
+        self.__client_is_on = False
+
         # Creare socket UDP
         self.__socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         self.__socket.bind((interfaceAddress, clientPort))
@@ -75,13 +77,27 @@ class NetworkInterface:
 
     def start(self):
         global running
+
+        self.__socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+        self.__socket.bind((interfaceAddress, clientPort))
+        self.__socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        self.__socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+        # creare de threaduri separate pentru trimitere si pentru primire de date
+        self.__receive_thread = threading.Thread(target=self.__receive_function)
+        self.__offer_wait_thread = threading.Thread(target=self.__offer_wait_function)
+        self.__send_requests_thread = threading.Thread(target=self.__send_requests_function)
+
+        # creare thread pentru reinnoire de adresa, se va porni abia dupa ce se primeste un mesaj de ACK
+        self.__lease_time_renew_thread = threading.Thread(target=self.__lease_time_renew_function)
+
         try:
             running = True
             # self.__receive_thread.start()
             self.__offer_wait_thread.start()  # pornire thread pentru primire de maseje OFFER
-        except:
+        except :
             print()
-            print("Eroare la pornirea threadului")
+            print("Eroare la pornirea threadului", )
             sys.exit()
 
         # trimitere mesaj DISCOVER la pornire
@@ -106,7 +122,7 @@ class NetworkInterface:
     def __lease_time_renew_function(self):
         print("Lease tine renew thread started")
         self.__contor_lease_time = 0
-        while True:
+        while running:
             print("time passed: ", self.__contor_lease_time)
             sleep(1)
             self.__contor_lease_time = self.__contor_lease_time + 1
@@ -330,6 +346,7 @@ class NetworkInterface:
             if self.__sent_renew_t1:
                 self.__contor_lease_time = 0
                 self.__sent_renew_t1 = False
+                self.reset_client()
 
             if self.__sent_renew_t2:
                 self.__contor_lease_time = 0
@@ -343,7 +360,7 @@ class NetworkInterface:
                                                            processed_options[options_index][2][1],
                                                            processed_options[options_index][2][2],
                                                            processed_options[options_index][2][3]])).hex(), base=16)
-                    # self.__lease_time = 30
+                    self.__lease_time = 30
 
                 if processed_options[options_index][0] == 1:
                     self.__subnet_mask = bytes([processed_options[options_index][2][0],
@@ -382,6 +399,34 @@ class NetworkInterface:
         if Message.package_type(processed_options) == 'NAK':
             print("Serverul a raspuns cu un mesaj de NAK")
 
+
+    def reset_client(self):
+        global running
+        print("Performig RESET")
+
+        self.send_release()
+        self.__socket.close()
+
+        running = False
+
+        if self.__lease_time_renew_thread.is_alive():
+            print("STOP lease time renew thread")
+            self.__lease_time_renew_thread.join()
+
+        if self.__send_requests_thread.is_alive():
+            self.__send_requests_thread.join()
+            print("STOP send requests thread")
+
+        if self.__offer_wait_thread.is_alive():
+            self.__offer_wait_thread.join()
+            print("STOP offer wait thread")
+
+        if self.__receive_thread.is_alive():
+            # self.__receive_thread.join()
+            print("STOP receive thread (current) thread")
+            self.start()
+            print("Start the client again")
+            sys.exit()
 
 
     def get_ip(self):
