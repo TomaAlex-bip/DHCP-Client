@@ -190,7 +190,7 @@ class Interface:
             self.__window.update()
             self.add_col()
         elif self.enabled.get() == 0:
-            self.__networkInterface.reset_client()
+            self.__networkInterface.reset_client(False)
             self.__refresh_gui_interface_thread.join()
             print("DHCP disabled")
 

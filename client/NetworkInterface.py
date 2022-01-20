@@ -45,7 +45,7 @@ class NetworkInterface:
         self.__lease_t2 = 0
         self.__dns = bytes([0x00, 0x00, 0x00, 0x00])
 
-        self.__options_list = [1, 3, 6, 51]  # default options
+        self.__options_list = [1, 3, 6, 51, 42, 44, 58, 59]  # default options
 
         self.__server_ip_addr = bytes([0x00, 0x00, 0x00, 0x00])
 
@@ -333,7 +333,7 @@ class NetworkInterface:
                                                            processed_options[options_index][2][1],
                                                            processed_options[options_index][2][2],
                                                            processed_options[options_index][2][3]])).hex(), base=16)
-                    self.__lease_time = 30
+                    # self.__lease_time = 30
 
                 if processed_options[options_index][0] == 1:
                     self.__subnet_mask = bytes([processed_options[options_index][2][0],
