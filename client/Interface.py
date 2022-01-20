@@ -1,4 +1,5 @@
 import socket
+import time
 from tkinter import *
 from tkinter import messagebox
 from tkinter.ttk import Treeview, Style
@@ -104,7 +105,7 @@ class Interface:
         self.__apply = Button(
             self.right_list,
             text='Apply',
-            command=self.return_op)
+            command=self.Item_test)
 
         self.__apply.place(relx=0.84, rely=0.6)
 
@@ -151,11 +152,14 @@ class Interface:
             opt_list.append(59)
         if self.opt184.get() == 1:
             opt_list.append(184)
-        return opt_list
+        self.__networkInterface.update_options_list(opt_list)
 
-    def return_op(self):
-        op_list.op_list = self.Item_test()
-        print(op_list.op_list)
+
+
+    #def return_op(self):
+    #    op_list.op_list = self.Item_test()
+    #    print(op_list.op_list)
+
 
     def add_col(self):
         self.client_table.append('Subnet Mask')
@@ -167,6 +171,8 @@ class Interface:
             self.listBox.column(i, width=100)
             self.listBox.heading(i, text=i)
         self.listBox.place(relx=0.5, rely=0.5, anchor="center")
+        time.sleep(22)
+        temp = self.__networkInterface.get_lease()
         self.listBox.insert('', 'end', text="1",
                             values=(
                                 (self.__networkInterface.get_mac().hex()).upper(),
@@ -174,7 +180,32 @@ class Interface:
                                 socket.inet_ntoa(self.__networkInterface.get_sm()),
                                 socket.inet_ntoa(self.__networkInterface.get_gw()),
                                 socket.inet_ntoa(self.__networkInterface.get_dns()),
-                                str(self.__networkInterface.get_lease()) + 's'))
+                                str(temp) + 's'))
+        while temp > -1:
+
+            mins, secs = divmod(temp, 60)
+            hours = 0
+            if mins > 60:
+                hours, mins = divmod(mins, 60)
+
+            for i in self.listBox.get_children():
+                self.listBox.delete(i)
+            self.listBox.insert('', 'end', values=(self.__networkInterface.get_mac().hex().upper(),
+                                socket.inet_ntoa(self.__networkInterface.get_ip()),
+                                socket.inet_ntoa(self.__networkInterface.get_sm()),
+                                socket.inet_ntoa(self.__networkInterface.get_gw()),
+                                socket.inet_ntoa(self.__networkInterface.get_dns()),
+                                '{:d}:{:02d}:{:02d}'.format(hours, mins, secs)))
+            self.__window.update()
+            time.sleep(1)
+
+            # when temp value = 0; then a messagebox pop's up
+            # with a message:"Time's up"
+            temp -= 1
+            if (temp == 0):
+                messagebox.showinfo(title="Lease Time", message="Lease time's up! Starting renewal...")
+                # TODO asteapta pana la primirea de informatii noi dupa renew si reincepe timerul...
+
 
     def on_connect_button_callback(self):
         if self.enabled.get() == 1:
