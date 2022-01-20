@@ -424,11 +424,8 @@ class NetworkInterface:
                 print("Start the client again")
             sys.exit()
 
-
-
-
     def get_ip(self):
-        return self.__current_ip_addr
+        return self.__received_ip_addr
 
     def get_sm(self):
         return self.__subnet_mask
