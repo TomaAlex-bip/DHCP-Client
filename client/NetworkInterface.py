@@ -13,9 +13,9 @@ clientPort = 68
 '''In cazul in care sunt instalate masini virtuale pe statie
 trebuie dat disable la conexiuni (din Control Panel \ Network and Internet \ Network Connections)
 pentru ca functia gethostbyname sa returneze ip-ul corect'''
-# interfaceAddress = socket.gethostbyname(socket.gethostname())
+interfaceAddress = socket.gethostbyname(socket.gethostname())
 
-interfaceAddress = '192.168.0.107'
+#interfaceAddress = '192.168.0.107'
 # interfaceAddress = '192.168.0.126'
 
 broadcastAddress = '255.255.255.255'
@@ -124,10 +124,10 @@ class NetworkInterface:
 
 
     def __lease_time_renew_function(self):
-        print("Lease tine renew thread started")
+        print("Lease time renew thread started")
         self.__contor_lease_time = 0
         while running:
-            print("time passed: ", self.__contor_lease_time)
+            #print("time passed: ", self.__contor_lease_time)
             sleep(1)
             self.__contor_lease_time = self.__contor_lease_time + 1
             if not self.__sent_renew_t1 and self.__contor_lease_time >= self.__lease_time * 50.0/100.0:  # T1
@@ -223,6 +223,7 @@ class NetworkInterface:
         self.__socket.sendto(inform_message, (server_ip, serverPort))
         print("\nS-a trimis un mesaj INFORM catre " + server_ip +
               " cu adresa: " + Message.format_ip(self.__received_ip_addr))
+        print("cu optiunile: ", self.__options_list)
 
     def send_options(self):
         server_ip = str(int(self.__server_ip_addr[0])) + '.' + str(int(self.__server_ip_addr[1])) + '.' + \
@@ -385,10 +386,9 @@ class NetworkInterface:
             print("Serverul a raspuns cu un mesaj de NAK")
             self.reset_client(False)
 
-
     def reset_client(self, start_again=True):
         global running
-        print("Performig RESET")
+        print("Performing RESET")
 
         self.send_release()
         self.__socket.close()
