@@ -1,4 +1,5 @@
 import socket
+import threading
 import time
 from tkinter import *
 from tkinter import messagebox
@@ -21,6 +22,8 @@ class Interface:
         self.__window.title("DHCP Client")
 
         self.__networkInterface = ni
+
+        self.__refresh_gui_interface_thread = threading.Thread(target=self.refresh_gui_interface)
 
         s_width = self.__window.winfo_screenwidth()
         s_height = self.__window.winfo_screenheight()
@@ -171,51 +174,24 @@ class Interface:
             self.listBox.column(i, width=100)
             self.listBox.heading(i, text=i)
         self.listBox.place(relx=0.5, rely=0.5, anchor="center")
-        time.sleep(22)
-        temp = self.__networkInterface.get_lease()
-        self.listBox.insert('', 'end', text="1",
-                            values=(
-                                (self.__networkInterface.get_mac().hex()).upper(),
-                                socket.inet_ntoa(self.__networkInterface.get_ip()),
-                                socket.inet_ntoa(self.__networkInterface.get_sm()),
-                                socket.inet_ntoa(self.__networkInterface.get_gw()),
-                                socket.inet_ntoa(self.__networkInterface.get_dns()),
-                                str(temp) + 's'))
-        while temp > -1:
+        # time.sleep(22)
 
-            mins, secs = divmod(temp, 60)
-            hours = 0
-            if mins > 60:
-                hours, mins = divmod(mins, 60)
-
-            for i in self.listBox.get_children():
-                self.listBox.delete(i)
-            self.listBox.insert('', 'end', values=(self.__networkInterface.get_mac().hex().upper(),
-                                socket.inet_ntoa(self.__networkInterface.get_ip()),
-                                socket.inet_ntoa(self.__networkInterface.get_sm()),
-                                socket.inet_ntoa(self.__networkInterface.get_gw()),
-                                socket.inet_ntoa(self.__networkInterface.get_dns()),
-                                '{:d}:{:02d}:{:02d}'.format(hours, mins, secs)))
-            self.__window.update()
-            time.sleep(1)
-
-            # when temp value = 0; then a messagebox pop's up
-            # with a message:"Time's up"
-            temp -= 1
-            if (temp == 0):
-                messagebox.showinfo(title="Lease Time", message="Lease time's up! Starting renewal...")
-                # TODO asteapta pana la primirea de informatii noi dupa renew si reincepe timerul...
 
 
     def on_connect_button_callback(self):
         if self.enabled.get() == 1:
             self.__networkInterface.start()
             print("DHCP enabled")
+
+            self.__refresh_gui_interface_thread.start()
+
             for i in self.listBox.get_children():
                 self.listBox.delete(i)
             self.__window.update()
             self.add_col()
         elif self.enabled.get() == 0:
+            self.__networkInterface.reset_client()
+            self.__refresh_gui_interface_thread.join()
             print("DHCP disabled")
 
     def on_legend_button_callback(self):
@@ -237,3 +213,40 @@ class Interface:
 
     def run_interface(self):
         self.__window.mainloop()
+
+
+    def refresh_gui_interface(self):
+        while True:
+            temp = self.__networkInterface.get_lease() - self.__networkInterface.get_lease_time_contor()
+            self.listBox.insert('', 'end', text="1",
+                                values=(
+                                    (self.__networkInterface.get_mac().hex()).upper(),
+                                    socket.inet_ntoa(self.__networkInterface.get_ip()),
+                                    socket.inet_ntoa(self.__networkInterface.get_sm()),
+                                    socket.inet_ntoa(self.__networkInterface.get_gw()),
+                                    socket.inet_ntoa(self.__networkInterface.get_dns()),
+                                    str(temp) + 's'))
+
+            mins, secs = divmod(temp, 60)
+            hours = 0
+            if mins > 60:
+                hours, mins = divmod(mins, 60)
+
+            for i in self.listBox.get_children():
+                self.listBox.delete(i)
+            self.listBox.insert('', 'end', values=(self.__networkInterface.get_mac().hex().upper(),
+                                                   socket.inet_ntoa(self.__networkInterface.get_ip()),
+                                                   socket.inet_ntoa(self.__networkInterface.get_sm()),
+                                                   socket.inet_ntoa(self.__networkInterface.get_gw()),
+                                                   socket.inet_ntoa(self.__networkInterface.get_dns()),
+                                                   '{:d}:{:02d}:{:02d}'.format(hours, mins, secs)))
+            self.__window.update()
+            time.sleep(1)
+
+            # when temp value = 0; then a messagebox pop's up
+            # with a message:"Time's up"
+            temp -= 1
+            if temp == 0:
+                messagebox.showinfo(title="Lease Time", message="Lease time's up! Starting renewal...")
+                # TODO asteapta pana la primirea de informatii noi dupa renew si reincepe timerul...
+

@@ -432,6 +432,9 @@ class NetworkInterface:
     def get_old_ip(self):
         return self.__old_ip_addr
 
+    def get_lease_time_contor(self):
+        return self.__contor_lease_time
+
     def update_options_list(self, options_list):
         self.__options_list = options_list
 
