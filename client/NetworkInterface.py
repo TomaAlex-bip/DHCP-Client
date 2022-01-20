@@ -57,6 +57,10 @@ class NetworkInterface:
 
         self.__client_is_on = False
 
+        self.__response_type =' '
+        self._str_processed_options_info = ''
+
+
         # Creare socket UDP
         self.__socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         self.__socket.bind((interfaceAddress, clientPort))
@@ -237,6 +241,7 @@ class NetworkInterface:
 
     def __process_package(self, message, options_length, processed_options):
 
+
         op = message[0].hex()
         htype = message[1].hex()
         hlen = message[2].hex()
@@ -272,18 +277,18 @@ class NetworkInterface:
         # print("magic cookie: " + message[14].hex())
         # print("options: " + message[15].hex())
 
-
         print("\nS-a receptionat ", message, " \nde la server yiaddr: ", Message.format_ip(yiaddr))
         options_index = 0
         while options_index < len(processed_options):
             print("   cu optiunea " + str(options_index) + ": ", processed_options[options_index])
+            if Message.package_type(processed_options) == 'ACK':
+                self._str_processed_options_info += str (processed_options[options_index]) + '\n'
             if processed_options[options_index][0] == 54:
                 received_server_ip_addr = bytes([processed_options[options_index][2][0],
                                                processed_options[options_index][2][1],
                                                processed_options[options_index][2][2],
                                                processed_options[options_index][2][3]])
             options_index = options_index + 1
-
         # decide what to do based on the received package
 
         # 1     DHCPDISCOVER    c
@@ -295,8 +300,11 @@ class NetworkInterface:
         # 7     DHCPRELEASE     c
         # 8     DHCPINFORM      c
 
+
         # this verifies if the message is an OFFER MESSAGE from the server
+
         if Message.package_type(processed_options) == 'OFFER':
+            self.__response_type = 'OFFER'
             print("Serverul a raspuns cu un mesaj de OFFER")
 
             # sends an REQUEST MESSAGE to the server
@@ -326,6 +334,7 @@ class NetworkInterface:
 
         # this verifies if the message is an ACK MESSAGE from the server
         if Message.package_type(processed_options) == 'ACK':
+            self.__response_type = 'ACK'
             print("Serverul a raspuns cu un mesaj de ACK")
 
             # la primul mesaj de ack se porneste contorul pentru lease time
@@ -444,4 +453,12 @@ class NetworkInterface:
 
     def update_options_list(self, options_list):
         self.__options_list = options_list
+
+    def get_info_response(self):
+        return self._str_processed_options_info
+    def delete_info_response(self):
+        self._str_processed_options_info =''
+
+    def get_message_type(self):
+        return str(self.__response_type)
 
