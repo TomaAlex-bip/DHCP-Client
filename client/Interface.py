@@ -21,6 +21,8 @@ class Interface:
 
         self.__networkInterface = ni
 
+        self.pressed_inform = 0
+
         self.__refresh_gui_interface_thread = threading.Thread(target=self.refresh_gui_interface)
 
         s_width = self.__window.winfo_screenwidth()
@@ -191,11 +193,13 @@ class Interface:
             print("DHCP disabled")
 
     def on_inform_button_callback(self):
+        self.pressed_inform = 1
         if self.__networkInterface.get_lease() == 0:
             messagebox.showinfo('', 'Retrieving IP. Wait ')
         else:
             self.__networkInterface.send_inform()
-            messagebox.showinfo('Inform', 'Inform recieved')
+            self.pressed_inform = 1
+           # messagebox.showinfo('Inform response', self.__networkInterface.get_info_response())
 
     def on_legend_button_callback(self):
         messagebox.showinfo('Options Legend', 'Cele mai folosite optiuni sunt: \n'
@@ -218,7 +222,16 @@ class Interface:
         self.__window.mainloop()
 
     def refresh_gui_interface(self):
+        of = 0
         while True:
+            if self.__networkInterface.get_message_type() == 'OFFER':
+                of = 1
+            if (self.__networkInterface.get_message_type() == 'ACK' and of == 1) or (self.__networkInterface.get_message_type() == 'ACK' and self.pressed_inform == 1) :
+                messagebox.showinfo('Acknowledge', self.__networkInterface.get_info_response())
+                self.__networkInterface.delete_info_response()
+                of = 0
+                self.pressed_inform = 0
+
             temp = self.__networkInterface.get_lease() - self.__networkInterface.get_lease_time_contor()
             self.listBox.insert('', 'end', text="1",
                                 values=(
