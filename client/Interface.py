@@ -5,7 +5,6 @@ from tkinter import *
 from tkinter import messagebox
 from tkinter.ttk import Treeview, Style
 
-
 # mac_addr_client = bytes([0x00, 0x0b, 0x82, 0x01, 0xfc, 0x42])
 # old_ip_addr_client = bytes([0xc0, 0xa8, 0x00, 0x71])
 
@@ -62,7 +61,7 @@ class Interface:
             text="Option legend",
             command=self.on_legend_button_callback
         )
-        self.__legend_button.pack(ipadx=0, ipady=0, expand=True, side='left')
+        self.__legend_button.place(relx=0.8, x=30, rely=0.3, y=-10, anchor="center")
 
         self.__options_button = Menubutton(
             self.right_list,
@@ -72,7 +71,7 @@ class Interface:
 
         self.__options_button.menu = Menu(self.__options_button, tearoff=0)
         self.__options_button["menu"] = self.__options_button.menu
-        self.__options_button.pack(ipadx=0, ipady=0, expand=True, side='left')
+        self.__options_button.place(relx=0.8, x=30, rely=0.3, y=70, anchor="center")
 
         self.opt1 = IntVar()
         self.opt3 = IntVar()
@@ -102,14 +101,14 @@ class Interface:
         self.__options_button.menu.add_checkbutton(label="59", variable=self.opt59, onvalue=1, offvalue=0)
         self.__options_button.menu.add_checkbutton(label="184", variable=self.opt184, onvalue=1, offvalue=0)
 
-        self.__options_button.pack()
+        #
 
         self.__apply = Button(
             self.right_list,
             text='Apply',
             command=self.Item_test)
 
-        self.__apply.place(relx=0.84, rely=0.6)
+        self.__apply.place(relx=0.8, x=55, rely=0.4, y=90, anchor="center")
 
         def showTableini():
             self.listBox.insert('', 'end', text="1",
@@ -156,13 +155,6 @@ class Interface:
             opt_list.append(184)
         self.__networkInterface.update_options_list(opt_list)
 
-
-
-    #def return_op(self):
-    #    op_list.op_list = self.Item_test()
-    #    print(op_list.op_list)
-
-
     def add_col(self):
         self.client_table.append('Subnet Mask')
         self.client_table.append('Gateway Address')
@@ -175,8 +167,6 @@ class Interface:
         self.listBox.place(relx=0.5, rely=0.5, anchor="center")
         # time.sleep(22)
 
-
-
     def on_connect_button_callback(self):
         if self.enabled.get() == 1:
             self.__networkInterface.start()
@@ -188,10 +178,24 @@ class Interface:
                 self.listBox.delete(i)
             self.__window.update()
             self.add_col()
+
+            self.__inform_button = Button(
+                self.right_list,
+                text="Send inform message",
+                command=self.on_inform_button_callback
+            )
+            self.__inform_button.place(relx=0.2, rely=0.5, anchor="center")
         elif self.enabled.get() == 0:
             self.__networkInterface.reset_client(False)
             self.__refresh_gui_interface_thread.join()
             print("DHCP disabled")
+
+    def on_inform_button_callback(self):
+        if self.__networkInterface.get_lease() == 0:
+            messagebox.showinfo('', 'Retrieving IP. Wait ')
+        else:
+            self.__networkInterface.send_inform()
+            messagebox.showinfo('Inform', 'Inform recieved')
 
     def on_legend_button_callback(self):
         messagebox.showinfo('Options Legend', 'Cele mai folosite optiuni sunt: \n'
@@ -212,7 +216,6 @@ class Interface:
 
     def run_interface(self):
         self.__window.mainloop()
-
 
     def refresh_gui_interface(self):
         while True:
@@ -246,6 +249,4 @@ class Interface:
             # with a message:"Time's up"
             temp -= 1
             if temp == 0:
-                messagebox.showinfo(title="Lease Time", message="Lease time's up! Starting renewal...")
-                # TODO asteapta pana la primirea de informatii noi dupa renew si reincepe timerul...
-
+                messagebox.showinfo(title="Lease Time", message="Lease time's up!")
