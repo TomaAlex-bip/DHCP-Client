@@ -13,9 +13,9 @@ clientPort = 68
 '''In cazul in care sunt instalate masini virtuale pe statie
 trebuie dat disable la conexiuni (din Control Panel \ Network and Internet \ Network Connections)
 pentru ca functia gethostbyname sa returneze ip-ul corect'''
-# interfaceAddress = socket.gethostbyname(socket.gethostname())
+interfaceAddress = socket.gethostbyname(socket.gethostname())
 
-interfaceAddress = '192.168.0.107'
+# interfaceAddress = '192.168.0.107'
 # interfaceAddress = '192.168.0.126'
 
 broadcastAddress = '255.255.255.255'
@@ -189,11 +189,11 @@ class NetworkInterface:
     def send_request(self):
         server_ip = str(int(self.__server_ip_addr[0])) + '.' + str(int(self.__server_ip_addr[1])) + '.' + \
                    str(int(self.__server_ip_addr[2])) + '.' + str(int(self.__server_ip_addr[3]))
-        options_list = [1, 3, 6, 51, 58, 59]  # TODO: get the options from inteface
-        request_message = Message.request(self.__mac_addr, self.__server_ip_addr, self.__received_ip_addr, options_list)
+        #options_list = [1, 3, 6, 51, 58, 59]  # TODO: get the options from inteface
+        request_message = Message.request(self.__mac_addr, self.__server_ip_addr, self.__received_ip_addr, self.__options_list)
         self.__socket.sendto(request_message, (server_ip, serverPort))
         print("\nS-a trimis un mesaj REQUEST catre " + server_ip + " cu adresa: " + self.__received_ip_addr.hex())
-        print(options_list)
+        print(self.__options_list)
 
     def send_decline(self, server_ip_addr):
         server_ip = str(int(server_ip_addr[0])) + '.' + str(int(server_ip_addr[1])) + '.' + \
@@ -212,16 +212,16 @@ class NetworkInterface:
     def send_inform(self):
         server_ip = str(int(self.__server_ip_addr[0])) + '.' + str(int(self.__server_ip_addr[1])) + '.' + \
                     str(int(self.__server_ip_addr[2])) + '.' + str(int(self.__server_ip_addr[3]))
-        options_list = [51, 58, 59]  # TODO: get the options from inteface
-        inform_message = Message.inform(self.__mac_addr, self.__server_ip_addr, options_list)
+        #options_list = [51, 58, 59]  # TODO: get the options from inteface
+        inform_message = Message.inform(self.__mac_addr, self.__server_ip_addr, self.__options_list)
         self.__socket.sendto(inform_message, (server_ip, serverPort))
         print("\nS-a trimis un mesaj INFORM catre " + server_ip + " cu adresa: " + self.__received_ip_addr.hex())
 
     def send_options(self):
         server_ip = str(int(self.__server_ip_addr[0])) + '.' + str(int(self.__server_ip_addr[1])) + '.' + \
                     str(int(self.__server_ip_addr[2])) + '.' + str(int(self.__server_ip_addr[3]))
-        options_list = [1, 3, 6, 51, 58, 59]  # TODO: get the options from inteface
-        options_message = Message.get_options(self.__mac_addr, self.__server_ip_addr, options_list)
+        #options_list = [1, 3, 6, 51, 58, 59]  # TODO: get the options from inteface
+        options_message = Message.get_options(self.__mac_addr, self.__server_ip_addr, self.__options_list)
         self.__socket.sendto(options_message, (server_ip, serverPort))
         print("\nS-a trimis un mesaj OPTIONS catre " + server_ip + " cu adresa: " + self.__received_ip_addr.hex())
 
@@ -455,21 +455,4 @@ class NetworkInterface:
 
     def update_options_list(self, options_list):
         self.__options_list = options_list
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
