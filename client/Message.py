@@ -21,7 +21,7 @@ class Message:
     # pentru a trimite alte optiuni se face cu opt 52 si dupa in value se trec mai multe optiuni cerute
 
     @staticmethod
-    def discover(client_mac, requested_ip):
+    def discover(client_mac, requested_ip, options_list):
         op = bytes([0x01])
         htype = bytes([0x01])
         hlen = bytes([0x06])
@@ -56,18 +56,37 @@ class Message:
         # 1 -> mask
         # 6 -> DNS
         # 51 -> lease time
-        request_option = bytes([52, 4, 1, 3, 6, 42])  # TODO: sa aiba lungime variabila, doar optiunile cerute
+        request_option = bytes([55, len(options_list)])
 
-        end_options = bytes([0xff])
+        i = 0
+        while i < len(options_list):
+            request_option += bytes([options_list[i]])
+            i = i + 1
 
-        padding = bytes([0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])  # TODO: sa fie de lungime variablia cum trebuie
+        request_option_length = len(request_option)
 
-        package = struct.pack(f'!ssss4s2s2s4s4s4s4s16s64s128s4s3s9s6s6ss7s',
+        # 260 de octeti pana la server_identifier inclusiv + end_option
+        message_length = 260
+
+        if message_length % 16 == 0:
+            padding_length = 16
+        else:
+            good_length = (int(message_length / 16) + 1) * 16
+            padding_length = good_length - message_length + 1
+
+        padding = bytes([0x00] * padding_length)
+
+        end_option = bytes([0xff])
+
+        package = struct.pack(f'!ssss4s2s2s4s4s4s4s16s64s128s4s3s9s6s{request_option_length}ss{padding_length}s',
                               op, htype, hlen, hops, xid, secs, flags,
                               ciaddr, yiaddr, siaddr, giaddr, chaddr, sname, file,
                               magic_cookie, message_option, client_identifier_option,
-                              requested_ip_address_option, request_option, end_options, padding)
+                              requested_ip_address_option, request_option, end_option, padding
+                              )
+
         return package
+
 
     @staticmethod
     def request(client_mac, server_ip, old_ipaddr, options_list):
@@ -259,8 +278,6 @@ class Message:
         # 260 de octeti pana la server_identifier inclusiv + end_option
         message_length = 260 + request_option_length
 
-        # TODO: TEST cu wireshark !!!
-
         if message_length % 16 == 0:
             padding_length = 16
         else:
@@ -320,8 +337,6 @@ class Message:
 
         # 260 de octeti pana la server_identifier inclusiv + end_option
         message_length = 257 + request_option_length
-
-        # TODO: TEST cu wireshark !!!
 
         if message_length % 16 == 0:
             padding_length = 16
