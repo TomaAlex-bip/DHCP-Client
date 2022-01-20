@@ -397,3 +397,12 @@ class Message:
             return 'NAK'
         else:
             return 'unknown'
+
+
+    @staticmethod
+    def format_ip(ip_bytes):
+        ip_frumos = str(int(ip_bytes[0])) + '.' + str(int(ip_bytes[1])) + '.' + \
+                    str(int(ip_bytes[2])) + '.' + str(int(ip_bytes[3]))
+        return ip_frumos
+
+

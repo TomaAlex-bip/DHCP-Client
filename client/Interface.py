@@ -5,7 +5,6 @@ from tkinter import *
 from tkinter import messagebox
 from tkinter.ttk import Treeview, Style
 
-import op_list
 
 # mac_addr_client = bytes([0x00, 0x0b, 0x82, 0x01, 0xfc, 0x42])
 # old_ip_addr_client = bytes([0xc0, 0xa8, 0x00, 0x71])

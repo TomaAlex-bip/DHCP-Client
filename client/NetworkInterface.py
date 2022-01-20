@@ -31,7 +31,7 @@ class NetworkInterface:
 
     def __init__(self, mac_addr, old_ip_addr):
 
-        print(interfaceAddress)
+        # print(interfaceAddress)
 
         self.__mac_addr = mac_addr
         self.__old_ip_addr = old_ip_addr
@@ -115,9 +115,12 @@ class NetworkInterface:
             if not r:
                 pass
             else:
-                data, address = self.__socket.recvfrom(1024)
-                message, options_length, options = Message.unpack_package(data)
-                self.__process_package(message, options_length, options)
+                try:
+                    data, address = self.__socket.recvfrom(1024)
+                    message, options_length, options = Message.unpack_package(data)
+                    self.__process_package(message, options_length, options)
+                except:
+                    pass
 
 
     def __lease_time_renew_function(self):
@@ -151,7 +154,7 @@ class NetworkInterface:
             # print("asteptam mesaj: ", contor)
             r, _, _ = select.select([self.__socket], [], [], 1)
             if r:
-                print("primit mesaj")
+                # print("primit mesaj")
                 data, address = self.__socket.recvfrom(1024)
                 message, options_length, options = Message.unpack_package(data)
                 if Message.package_type(options) == 'OFFER':
@@ -184,7 +187,7 @@ class NetworkInterface:
 
 
     def send_discover(self):
-        print("\nS-a trimis un mesaj DISCOVER cu adresa: ", self.__old_ip_addr.hex())
+        print("\nS-a trimis un mesaj DISCOVER cu adresa: " + Message.format_ip(self.__old_ip_addr))
         discover_message = Message.discover(self.__mac_addr, self.__old_ip_addr, self.__options_list)
         self.__socket.sendto(discover_message, (broadcastAddress, serverPort))
 
@@ -194,8 +197,9 @@ class NetworkInterface:
         request_message = Message.request(self.__mac_addr, self.__server_ip_addr,
                                           self.__received_ip_addr, self.__options_list)
         self.__socket.sendto(request_message, (server_ip, serverPort))
-        print("\nS-a trimis un mesaj REQUEST catre " + server_ip + " cu adresa: " + self.__received_ip_addr.hex())
-        print(self.__options_list)
+        print("\nS-a trimis un mesaj REQUEST catre " + server_ip +
+              " cu adresa: " + Message.format_ip(self.__received_ip_addr))
+        print("cu optiunile: ", self.__options_list)
 
     def send_decline(self, server_ip_addr):
         server_ip = str(int(server_ip_addr[0])) + '.' + str(int(server_ip_addr[1])) + '.' + \
@@ -209,21 +213,24 @@ class NetworkInterface:
                     str(int(self.__server_ip_addr[2])) + '.' + str(int(self.__server_ip_addr[3]))
         release_message = Message.release(self.__mac_addr, self.__server_ip_addr)
         self.__socket.sendto(release_message, (server_ip, serverPort))
-        print("\nS-a trimis un mesaj RELEASE catre " + server_ip + " cu adresa: " + self.__received_ip_addr.hex())
+        print("\nS-a trimis un mesaj RELEASE catre " + server_ip +
+              " cu adresa: " + Message.format_ip(self.__received_ip_addr))
 
     def send_inform(self):
         server_ip = str(int(self.__server_ip_addr[0])) + '.' + str(int(self.__server_ip_addr[1])) + '.' + \
                     str(int(self.__server_ip_addr[2])) + '.' + str(int(self.__server_ip_addr[3]))
         inform_message = Message.inform(self.__mac_addr, self.__server_ip_addr, self.__options_list)
         self.__socket.sendto(inform_message, (server_ip, serverPort))
-        print("\nS-a trimis un mesaj INFORM catre " + server_ip + " cu adresa: " + self.__received_ip_addr.hex())
+        print("\nS-a trimis un mesaj INFORM catre " + server_ip +
+              " cu adresa: " + Message.format_ip(self.__received_ip_addr))
 
     def send_options(self):
         server_ip = str(int(self.__server_ip_addr[0])) + '.' + str(int(self.__server_ip_addr[1])) + '.' + \
                     str(int(self.__server_ip_addr[2])) + '.' + str(int(self.__server_ip_addr[3]))
         options_message = Message.get_options(self.__mac_addr, self.__server_ip_addr, self.__options_list)
         self.__socket.sendto(options_message, (server_ip, serverPort))
-        print("\nS-a trimis un mesaj OPTIONS catre " + server_ip + " cu adresa: " + self.__received_ip_addr.hex())
+        print("\nS-a trimis un mesaj OPTIONS catre " + server_ip +
+              " cu adresa: " + Message.format_ip(self.__received_ip_addr))
 
 
 
@@ -265,7 +272,7 @@ class NetworkInterface:
         # print("options: " + message[15].hex())
 
 
-        print("\nS-a receptionat ", message, " \nde la server adresa: ", yiaddr.hex())
+        print("\nS-a receptionat ", message, " \nde la server yiaddr: ", Message.format_ip(yiaddr))
         options_index = 0
         while options_index < len(processed_options):
             print("   cu optiunea " + str(options_index) + ": ", processed_options[options_index])
@@ -366,11 +373,11 @@ class NetworkInterface:
                 self.__contor_lease_time = 0
                 self.__sent_renew_t2 = False
 
-            print("\nIP address:" + self.__current_ip_addr.hex())
-            print("subnet mask:" + self.__subnet_mask.hex())
-            print("gateway address:" + self.__gateway.hex())
-            print("dns address:" + self.__dns.hex())
-            print("lease time:" + str(self.__lease_time))
+            # print("\nIP address:" + self.__current_ip_addr.hex())
+            # print("subnet mask:" + self.__subnet_mask.hex())
+            # print("gateway address:" + self.__gateway.hex())
+            # print("dns address:" + self.__dns.hex())
+            # print("lease time:" + str(self.__lease_time))
 
 
         # this verifies if the message is an NAK MESSAGE from the server
@@ -389,20 +396,20 @@ class NetworkInterface:
         running = False
 
         if self.__lease_time_renew_thread.is_alive():
-            print("STOP lease time renew thread")
+            # print("STOP lease time renew thread")
             self.__lease_time_renew_thread.join()
 
         if self.__send_requests_thread.is_alive():
             self.__send_requests_thread.join()
-            print("STOP send requests thread")
+            # print("STOP send requests thread")
 
         if self.__offer_wait_thread.is_alive():
             self.__offer_wait_thread.join()
-            print("STOP offer wait thread")
+            # print("STOP offer wait thread")
 
         if self.__receive_thread.is_alive():
             # self.__receive_thread.join()
-            print("STOP receive thread (current) thread")
+            # print("STOP receive thread (current) thread")
             if start_again:
                 self.start()
                 print("Start the client again")
