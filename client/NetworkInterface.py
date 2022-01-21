@@ -13,9 +13,9 @@ clientPort = 68
 '''In cazul in care sunt instalate masini virtuale pe statie
 trebuie dat disable la conexiuni (din Control Panel \ Network and Internet \ Network Connections)
 pentru ca functia gethostbyname sa returneze ip-ul corect'''
-interfaceAddress = socket.gethostbyname(socket.gethostname())
+# interfaceAddress = socket.gethostbyname(socket.gethostname())
 
-#interfaceAddress = '192.168.0.107'
+interfaceAddress = '192.168.0.107'
 # interfaceAddress = '192.168.0.126'
 
 broadcastAddress = '255.255.255.255'
@@ -115,23 +115,23 @@ class NetworkInterface:
         while running:
             # Apelam la functia sistem IO -select- pentru a verifca daca socket-ul are date in bufferul de receptie
             # Stabilim un timeout de 1 secunda
-            r, _, _ = select.select([self.__socket], [], [], 1)
-            if not r:
-                pass
-            else:
-                try:
+            try:
+                r, _, _ = select.select([self.__socket], [], [], 1)
+                if not r:
+                    pass
+                else:
                     data, address = self.__socket.recvfrom(1024)
                     message, options_length, options = Message.unpack_package(data)
                     self.__process_package(message, options_length, options)
-                except:
-                    pass
+            except:
+                pass
 
 
     def __lease_time_renew_function(self):
         print("Lease time renew thread started")
         self.__contor_lease_time = 0
         while running:
-            #print("time passed: ", self.__contor_lease_time)
+            # print("time passed: ", self.__contor_lease_time)
             sleep(1)
             self.__contor_lease_time = self.__contor_lease_time + 1
             if not self.__sent_renew_t1 and self.__contor_lease_time >= self.__lease_time * 50.0/100.0:  # T1
